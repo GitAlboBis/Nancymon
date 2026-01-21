@@ -123,12 +123,13 @@ export class BattleScene extends Phaser.Scene {
     // ===========================================================================
 
     private createBackground(width: number, height: number): void {
-        // Gradient background using graphics
-        const bg = this.add.graphics();
-        bg.fillGradientStyle(0x2d2d44, 0x2d2d44, 0x1a1a2e, 0x1a1a2e, 1);
-        bg.fillRect(0, 0, width, height);
+        // Use battle background image instead of gradient
+        const bg = this.add.image(0, 0, 'battle-bg');
+        bg.setOrigin(0, 0);
+        bg.setDisplaySize(width, height);
+        bg.setDepth(-100); // Ensure it's at the bottom
 
-        // Add some ambient particles (hearts)
+        // Add some ambient particles (hearts) - keeps the nice touch
         for (let i = 0; i < 5; i++) {
             const heart = this.add.text(
                 Math.random() * width,
@@ -604,6 +605,55 @@ export class BattleScene extends Phaser.Scene {
         this.showText('What will you do?');
     }
 
+    // ===========================================================================
+    // VFX METHODS
+    // ===========================================================================
+
+    private playKissEffect(start: Phaser.Math.Vector2, end: Phaser.Math.Vector2): void {
+        const kiss = this.add.image(start.x, start.y, 'kiss');
+        kiss.setDepth(100); // Ensure it's on top
+
+        this.tweens.add({
+            targets: kiss,
+            x: end.x,
+            y: end.y,
+            angle: 360,
+            duration: 500,
+            ease: 'Power1',
+            onComplete: () => {
+                kiss.destroy();
+            }
+        });
+    }
+
+    private playHugEffect(target: Phaser.Math.Vector2): void {
+        const radius = 50;
+        const particleCount = 10;
+
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (i / particleCount) * Math.PI * 2;
+            const x = target.x + Math.cos(angle) * (radius * 0.5); // Start closer
+            const y = target.y + Math.sin(angle) * (radius * 0.5);
+
+            const heart = this.add.image(x, y, 'heart');
+            heart.setDepth(100);
+            heart.setScale(0.5);
+
+            this.tweens.add({
+                targets: heart,
+                x: target.x + Math.cos(angle) * radius,
+                y: target.y + Math.sin(angle) * radius,
+                alpha: 0,
+                scale: 1,
+                duration: 600,
+                ease: 'Back.out',
+                onComplete: () => {
+                    heart.destroy();
+                }
+            });
+        }
+    }
+
     private executePlayerMove(): void {
         const move = this.playerMemory.moves[this.currentMoveIndex];
         this.state = BattleState.PLAYER_ACTION;
@@ -618,6 +668,16 @@ export class BattleScene extends Phaser.Scene {
         // Show move text from BattleText.moves
         const moveText = getMoveDescription(move.id);
         this.queueText(`${move.emoji} ${moveText}`);
+
+        // Trigger VFX based on move ID/Name
+        const startPos = new Phaser.Math.Vector2(this.playerSprite.x, this.playerSprite.y);
+        const endPos = new Phaser.Math.Vector2(this.enemySprite.x, this.enemySprite.y);
+
+        if (move.name === 'Kiss' || move.id === 'kiss') {
+            this.playKissEffect(startPos, endPos);
+        } else if (move.name === 'Hug' || move.name === 'Comfort' || move.id === 'hug' || move.id === 'comfort') {
+            this.playHugEffect(endPos);
+        }
 
         // Animate player attack
         this.tweens.add({

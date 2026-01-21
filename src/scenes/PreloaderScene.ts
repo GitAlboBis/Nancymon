@@ -19,6 +19,9 @@ export class PreloaderScene extends Phaser.Scene {
 
         // Load map assets
         this.load.image('background', '/assets/background.png');
+        this.load.image('battle-bg', '/assets/battle-bg.jpg');
+        this.load.image('heart', '/assets/heart.png');
+        this.load.image('kiss', '/assets/kiss.png');
         this.load.tilemapTiledJSON('map', '/assets/map.tmj');
 
         // Load player spritesheet (32x48 per frame, 16 frames total in 4x4 grid)

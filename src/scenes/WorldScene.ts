@@ -21,6 +21,7 @@ export class WorldScene extends Phaser.Scene {
     private partner!: Follower;
     private dialogueBox!: DialogueBox;
     private background!: Phaser.GameObjects.Image;
+    private encounterZones: Phaser.GameObjects.Zone[] = [];
 
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private wasdKeys!: {
@@ -43,7 +44,8 @@ export class WorldScene extends Phaser.Scene {
     private mapHeight = 600;
 
     // Encounter settings
-    private readonly ENCOUNTER_CHANCE = 0.12;
+    // Encounter settings
+    // private readonly ENCOUNTER_CHANCE = 0.12; // Replaced by zone logic
     private isTransitioning = false;
     private isInDialogue = false;
 
@@ -99,6 +101,7 @@ export class WorldScene extends Phaser.Scene {
         this.isTransitioning = false;
         this.isInDialogue = false;
         this.exitZones = [];
+        this.encounterZones = [];
         this.interactableObjects.clear();
 
         // ====================================================================
@@ -189,32 +192,7 @@ export class WorldScene extends Phaser.Scene {
         this.checkExitZones();
     }
 
-    /**
-     * Creates the world from background image and Tiled JSON collision data
-     */
-    private createWorld(): void {
-        // Add background image
-        if (this.textures.exists('background')) {
-            this.background = this.add.image(0, 0, 'background');
-            this.background.setOrigin(0, 0);
-            this.mapWidth = this.background.width;
-            this.mapHeight = this.background.height;
-        } else {
-            // Fallback: create a placeholder background
-            console.warn('Background image not found, using placeholder');
-            this.mapWidth = 800;
-            this.mapHeight = 600;
-            const graphics = this.add.graphics();
-            graphics.fillStyle(0x3d6e3d, 1);
-            graphics.fillRect(0, 0, this.mapWidth, this.mapHeight);
-        }
 
-        // Set world bounds
-        this.physics.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
-
-        // Parse collision objects from Tiled JSON
-        this.parseCollisionObjects();
-    }
 
     /**
      * Parse collision objects from Tiled JSON map using Phaser tilemap API
@@ -261,6 +239,27 @@ export class WorldScene extends Phaser.Scene {
                 this.createCollisionBody(x, y, width, height);
             }
         });
+
+        // ====================================================================
+        // Parse 'Encounters' layer (Tall Grass)
+        // ====================================================================
+        const encounterLayer = map.getObjectLayer('Encounters');
+
+        if (encounterLayer && encounterLayer.objects) {
+            console.log(`🌿 Found "Encounters" layer with ${encounterLayer.objects.length} zones`);
+
+            encounterLayer.objects.forEach((obj: any) => {
+                const zone = this.add.zone(obj.x + obj.width / 2, obj.y + obj.height / 2, obj.width, obj.height);
+                this.encounterZones.push(zone); // Store for overlap checks
+
+                // Debug visualization: Semi-transparent red rectangle
+                if (this.physics.config.debug) {
+                    const graphics = this.add.graphics();
+                    graphics.fillStyle(0xff0000, 0.3); // Red, 30% opacity
+                    graphics.fillRect(obj.x, obj.y, obj.width, obj.height);
+                }
+            });
+        }
     }
 
     /**
@@ -464,8 +463,22 @@ export class WorldScene extends Phaser.Scene {
     }
 
     private onPlayerMoveComplete(): void {
-        // Small chance for random encounter
-        if (Math.random() < this.ENCOUNTER_CHANCE) {
+        // 1. Check if player is in a danger zone
+        let isInDangerZone = false;
+        const playerBounds = this.player.sprite.getBounds();
+
+        for (const zone of this.encounterZones) {
+            if (Phaser.Geom.Rectangle.Overlaps(playerBounds, zone.getBounds())) {
+                isInDangerZone = true;
+                break;
+            }
+        }
+
+        // 2. If safe, return immediately (no battle)
+        if (!isInDangerZone) return;
+
+        // 3. If in danger, roll dice (Lower chance slightly to 0.08 for better pacing)
+        if (Math.random() < 0.08) {
             this.startBattle();
         }
     }
