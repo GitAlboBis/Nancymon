@@ -4,6 +4,7 @@ import Phaser from 'phaser';
  * DialogueBox
  * Reusable UI component for NPC conversations
  * Features typewriter effect, multi-page support, and speaker name
+ * Now supports interactive choices
  */
 export class DialogueBox {
     private scene: Phaser.Scene;
@@ -12,6 +13,13 @@ export class DialogueBox {
     private nameText: Phaser.GameObjects.Text;
     private contentText: Phaser.GameObjects.Text;
     private continueIndicator: Phaser.GameObjects.Text;
+
+    // Options UI
+    private optionsContainer: Phaser.GameObjects.Container;
+    private optionTexts: Phaser.GameObjects.Text[] = [];
+    private selectedOptionIndex: number = 0;
+    private onOptionSelected?: (index: number) => void;
+    private isChoosing: boolean = false;
 
     private dialogueQueue: string[] = [];
     private currentText: string = '';
@@ -83,8 +91,20 @@ export class DialogueBox {
             this.continueIndicator
         ]);
 
+        // Options Container (Above the dialogue box)
+        this.optionsContainer = scene.add.container(0, boxY - 10); // Start slightly above
+        this.optionsContainer.setScrollFactor(0);
+        this.optionsContainer.setDepth(2001);
+        this.optionsContainer.setVisible(false);
+
         // Initially hidden
         this.container.setVisible(false);
+
+        // Bind input for options
+        this.scene.input.keyboard!.on('keydown-UP', () => this.navigateOptions(-1));
+        this.scene.input.keyboard!.on('keydown-DOWN', () => this.navigateOptions(1));
+        this.scene.input.keyboard!.on('keydown-ENTER', () => this.selectOption());
+        this.scene.input.keyboard!.on('keydown-SPACE', () => this.selectOption());
     }
 
     /**
@@ -99,6 +119,80 @@ export class DialogueBox {
         this.container.setVisible(true);
 
         this.showNextLine();
+    }
+
+    /**
+     * Shows a list of options for the player to choose from
+     */
+    public showOptions(prompt: string, options: string[], onSelect: (index: number) => void): void {
+        this.isVisible = true;
+        this.container.setVisible(true);
+        this.nameText.setText('Player'); // Or whoever asks
+        this.contentText.setText(prompt);
+        this.continueIndicator.setVisible(false);
+
+        this.onOptionSelected = onSelect;
+        this.isChoosing = true;
+        this.createOptionUI(options);
+    }
+
+    private createOptionUI(options: string[]): void {
+        this.optionsContainer.removeAll(true);
+        this.optionTexts = [];
+        this.selectedOptionIndex = 0;
+
+        const { width } = this.scene.cameras.main;
+        const optionHeight = 30;
+        const startY = - (options.length * optionHeight) - 10; // Stack upwards
+
+        options.forEach((opt, index) => {
+            const y = startY + (index * optionHeight);
+
+            // Backing
+            const bg = this.scene.add.graphics();
+            bg.fillStyle(0x000000, 0.8);
+            bg.fillRoundedRect(width / 2 - 100, y, 200, 25, 4);
+
+            // Text
+            const text = this.scene.add.text(width / 2, y + 12, opt, {
+                fontSize: '12px',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+
+            this.optionsContainer.add([bg, text]);
+            this.optionTexts.push(text);
+        });
+
+        this.optionsContainer.setVisible(true);
+        this.highlightOption(0);
+    }
+
+    private navigateOptions(delta: number): void {
+        if (!this.isChoosing) return;
+
+        this.selectedOptionIndex += delta;
+        if (this.selectedOptionIndex < 0) this.selectedOptionIndex = this.optionTexts.length - 1;
+        if (this.selectedOptionIndex >= this.optionTexts.length) this.selectedOptionIndex = 0;
+
+        this.highlightOption(this.selectedOptionIndex);
+    }
+
+    private highlightOption(index: number): void {
+        this.optionTexts.forEach((text, i) => {
+            text.setColor(i === index ? '#ffff00' : '#ffffff');
+            text.setScale(i === index ? 1.1 : 1.0);
+        });
+    }
+
+    private selectOption(): void {
+        if (!this.isChoosing) return;
+
+        this.isChoosing = false;
+        this.optionsContainer.setVisible(false);
+
+        if (this.onOptionSelected) {
+            this.onOptionSelected(this.selectedOptionIndex);
+        }
     }
 
     /**
@@ -157,6 +251,9 @@ export class DialogueBox {
      * Returns true if there was something to advance
      */
     public advance(): boolean {
+        // If choosing, don't advance dialogue
+        if (this.isChoosing) return false;
+
         if (!this.isVisible) {
             return false;
         }
@@ -181,7 +278,9 @@ export class DialogueBox {
      */
     public hide(): void {
         this.container.setVisible(false);
+        this.optionsContainer.setVisible(false);
         this.isVisible = false;
+        this.isChoosing = false;
 
         if (this.typewriterEvent) {
             this.typewriterEvent.destroy();
@@ -208,5 +307,6 @@ export class DialogueBox {
             this.typewriterEvent.destroy();
         }
         this.container.destroy();
+        this.optionsContainer.destroy();
     }
 }

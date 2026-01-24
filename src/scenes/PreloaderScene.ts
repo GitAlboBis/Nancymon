@@ -22,7 +22,10 @@ export class PreloaderScene extends Phaser.Scene {
         this.load.image('battle-bg', '/assets/battle-bg.jpg');
         this.load.image('heart', '/assets/heart.png');
         this.load.image('kiss', '/assets/kiss.png');
-        this.load.tilemapTiledJSON('map', '/assets/map.tmj');
+        this.load.image('map', '/assets/map.tmj');
+        this.load.image('city-background', '/assets/city-background.png');
+        this.load.image('cafe-interior', '/assets/cafe-interior.png');
+        this.load.image('title-bg', '/assets/title-bg.png');
 
         // Load player spritesheet (32x48 per frame, 16 frames total in 4x4 grid)
         this.load.spritesheet('player', '/assets/player.png', {
@@ -73,10 +76,13 @@ export class PreloaderScene extends Phaser.Scene {
         this.generatePartnerSpritesheet();
         this.generateNPCSpritesheet();
         this.generateWorldTiles();
+        this.generateWorldTiles();
         this.generateStressSprites();
+        // this.generateCityAssets(); // Using real asset now
 
         // Transition to world scene
-        this.scene.start('WorldScene');
+        // Transition to Title scene
+        this.scene.start('TitleScene');
     }
 
     private createLoadingBar(): void {
@@ -477,4 +483,5 @@ export class PreloaderScene extends Phaser.Scene {
             }
         }
     }
+
 }

@@ -4,7 +4,7 @@ export default defineConfig({
     base: './',
     build: {
         target: 'esnext',
-        minify: 'terser',
+        // minify: 'terser', // Removed because terser is not installed
         rollupOptions: {
             output: {
                 manualChunks: {

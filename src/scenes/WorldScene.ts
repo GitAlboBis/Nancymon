@@ -8,9 +8,13 @@ import {
     Direction,
     DIRECTION_VECTORS
 } from '../config/GameConfig';
+import { TimeSystem } from '../systems/TimeSystem';
 import { getRandomEnemy, DEFAULT_PLAYER_MEMORY, BattleData, Memory } from '../data/Memories';
 import { getPartnerDialogue } from '../data/Dialogues';
 import { GameState } from '../state/GameState';
+import { ReactionBubble, ReactionType } from '../ui/ReactionBubble';
+import { WeatherSystem, WeatherType } from '../systems/WeatherSystem';
+
 
 /**
  * WorldScene
@@ -21,6 +25,9 @@ export class WorldScene extends Phaser.Scene {
     private partner!: Follower;
     private dialogueBox!: DialogueBox;
     private background!: Phaser.GameObjects.Image;
+    private dayNightOverlay!: Phaser.GameObjects.Rectangle;
+    private timeSystem!: TimeSystem;
+    private weatherSystem!: WeatherSystem;
     private encounterZones: Phaser.GameObjects.Zone[] = [];
 
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -77,6 +84,19 @@ export class WorldScene extends Phaser.Scene {
     create(): void {
         console.log('🗺️ Map loaded');
         console.log('🎮 Player loaded');
+
+        this.timeSystem = TimeSystem.getInstance();
+        this.weatherSystem = new WeatherSystem(this);
+        // Start with some nice atmosphere
+        this.weatherSystem.setWeather(WeatherType.CHERRY_BLOSSOM);
+
+        // Unlock starter memory for the demo/surprise
+        GameState.collectMemory('paris_trip');
+
+        // Launch HUD if not active
+        if (!this.scene.isActive('HudOverlay')) {
+            this.scene.launch('HudOverlay');
+        }
 
         // ====================================================================
         // A. FORCE LOAD THE IMAGE DIRECTLY (NOT through tilemap)
@@ -146,6 +166,11 @@ export class WorldScene extends Phaser.Scene {
         // Debug UI
         this.createDebugUI();
 
+        // Day/Night Overlay
+        this.dayNightOverlay = this.add.rectangle(0, 0, this.mapWidth, this.mapHeight, 0x000010, 0)
+            .setOrigin(0, 0)
+            .setDepth(90); // Below DebugUI (100)
+
         // Setup touch controls for mobile
         this.setupTouchControls();
 
@@ -155,8 +180,14 @@ export class WorldScene extends Phaser.Scene {
         // ====================================================================
         // G. HANDLE SCENE WAKE (returning from battle)
         // ====================================================================
-        this.events.on('wake', () => {
+        this.events.on('wake', (_sys: Phaser.Scenes.Systems, data: any) => {
             console.log('🔄 WorldScene waking from sleep');
+
+            // Update player memory from battle data
+            if (data?.playerMemory) {
+                this.playerMemory = data.playerMemory;
+                console.log(`📊 Updated Player Memory: Lv.${this.playerMemory.level} | XP: ${this.playerMemory.xp}/${this.playerMemory.xpToNextLevel}`);
+            }
 
             // 1. Force Camera Reset
             this.cameras.main.fadeIn(1000, 0, 0, 0); // Fade back in from black
@@ -174,13 +205,23 @@ export class WorldScene extends Phaser.Scene {
             // 3. Reset flags
             this.isTransitioning = false;
             this.isInDialogue = false;
+
+            // Wake HUD
+            this.scene.wake('HudOverlay');
         });
     }
 
     update(time: number, delta: number): void {
+        // Update weather
+        this.weatherSystem.update();
+
         if (!this.isTransitioning && !this.isInDialogue) {
             this.handleInput();
         }
+
+        // Update Day/Night Cycle
+        const alpha = this.timeSystem.getLightIntensity();
+        this.dayNightOverlay.setAlpha(alpha);
 
         // Update partner
         this.partner.update(time, delta);
@@ -329,10 +370,10 @@ export class WorldScene extends Phaser.Scene {
         this.cameras.main.fadeOut(1000, 0, 0, 0);
 
         this.cameras.main.once('camerafadeoutcomplete', () => {
-            // For now, restart the scene (until we have the second map)
-            console.log('🏙️ City map not yet implemented, restarting...');
+            // Transition to CityScene
+            console.log('🏙️ Moving to City...');
             this.input.keyboard!.enabled = true;
-            this.scene.restart();
+            this.scene.start('CityScene');
         });
     }
 
@@ -370,12 +411,7 @@ export class WorldScene extends Phaser.Scene {
         return true;
     }
 
-    private setupCamera(): void {
-        this.cameras.main.setBounds(0, 0, this.mapWidth, this.mapHeight);
-        this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
-        this.cameras.main.setDeadzone(50, 50);
-        this.cameras.main.setRoundPixels(true);
-    }
+
 
     private setupInput(): void {
         this.cursors = this.input.keyboard!.createCursorKeys();
@@ -389,13 +425,24 @@ export class WorldScene extends Phaser.Scene {
         // Interaction key
         this.input.keyboard!.on('keydown-SPACE', () => this.handleInteraction());
         this.input.keyboard!.on('keydown-ENTER', () => this.handleInteraction());
+        this.input.keyboard!.on('keydown-M', () => this.openMemoryAlbum());
+        this.input.keyboard!.on('keydown-J', () => this.openJournal());
+        this.input.keyboard!.on('keydown-I', () => this.openBag());
 
-        // Debug: Force battle
         this.input.keyboard!.on('keydown-B', () => {
             if (!this.isTransitioning && !this.isInDialogue) {
                 this.startBattle();
             }
         });
+
+        // Debug: Weather controls
+        this.input.keyboard!.on('keydown-ONE', () => this.weatherSystem.setWeather(WeatherType.NONE));
+        this.input.keyboard!.on('keydown-TWO', () => this.weatherSystem.setWeather(WeatherType.RAIN));
+        this.input.keyboard!.on('keydown-THREE', () => this.weatherSystem.setWeather(WeatherType.SNOW));
+        this.input.keyboard!.on('keydown-FOUR', () => this.weatherSystem.setWeather(WeatherType.CHERRY_BLOSSOM));
+
+        // System Menu
+        this.input.keyboard!.on('keydown-ESC', () => this.openSystemMenu());
     }
 
     /**
@@ -521,6 +568,9 @@ export class WorldScene extends Phaser.Scene {
     private handleObjectInteraction(objectName: string): void {
         this.isInDialogue = true;
 
+        // Show reaction
+        this.showReaction(this.player.sprite.x, this.player.sprite.y - 40, 'question');
+
         let dialogue: string[] = [];
 
         switch (objectName) {
@@ -541,6 +591,11 @@ export class WorldScene extends Phaser.Scene {
      */
     private startPartnerDialogue(): void {
         this.isInDialogue = true;
+
+        // Show love reaction on partner
+        if (this.partner) {
+            this.showReaction(this.partner.sprite.x, this.partner.sprite.y - 40, 'love');
+        }
 
         const dialogue = getPartnerDialogue();
 
@@ -568,6 +623,9 @@ export class WorldScene extends Phaser.Scene {
 
         this.isTransitioning = true;
 
+        // Show alert reaction!
+        this.showReaction(this.player.sprite.x, this.player.sprite.y - 40, 'alert');
+
         // Battle flash effect
         this.cameras.main.flash(500, 255, 255, 255);
 
@@ -587,10 +645,47 @@ export class WorldScene extends Phaser.Scene {
             this.time.delayedCall(300, () => {
                 // Use sleep() so WorldScene can be woken up properly when battle ends
                 this.scene.sleep('WorldScene');
+                this.scene.sleep('HudOverlay'); // Hide HUD during battle
                 this.scene.launch('BattleScene', battleData);
                 console.log('😴 WorldScene sleeping, launching BattleScene');
             });
         });
+    }
+
+    private openMemoryAlbum(): void {
+        if (this.isTransitioning || this.isInDialogue) return;
+
+        console.log('📖 Opening NancyDex...');
+        this.scene.pause();
+        this.scene.pause('HudOverlay');
+        this.scene.launch('MemoryAlbumScene');
+    }
+
+    private openJournal(): void {
+        if (this.isTransitioning || this.isInDialogue) return;
+
+        console.log('📓 Opening Journal...');
+        this.scene.pause();
+        this.scene.pause('HudOverlay');
+        this.scene.launch('JournalScene');
+    }
+
+    private openBag(): void {
+        if (this.isTransitioning || this.isInDialogue) return;
+
+        console.log('🎒 Opening Bag...');
+        this.scene.pause();
+        this.scene.pause('HudOverlay');
+        this.scene.launch('BagScene');
+    }
+
+    private openSystemMenu(): void {
+        if (this.isTransitioning || this.isInDialogue) return;
+
+        console.log('⚙️ Opening System Menu...');
+        this.scene.pause();
+        this.scene.pause('HudOverlay');
+        this.scene.launch('SystemMenuScene');
     }
 
     private createDebugUI(): void {
@@ -614,8 +709,15 @@ export class WorldScene extends Phaser.Scene {
             `Tile: (${this.player.tileX}, ${this.player.tileY})`,
             `World: (${playerWorldX}, ${playerWorldY})`,
             `Dir: ${Direction[this.player.currentDirection]}${touchDir ? ` (touch: ${touchDir})` : ''}`,
+            `Tile: (${this.player.tileX}, ${this.player.tileY})`,
+            `World: (${playerWorldX}, ${playerWorldY})`,
+            `Dir: ${Direction[this.player.currentDirection]}${touchDir ? ` (touch: ${touchDir})` : ''}`,
             `Map: ${this.mapWidth}x${this.mapHeight}`,
-            `[SPACE/A] Talk | [B] Battle`
+            `[SPACE/A] Talk | [B] Battle | [M] Dex | [J] Journal | [I] Bag`,
+            `Weather: [1]None [2]Rain [3]Snow [4]Petals`
         ].join('\n'));
+    }
+    private showReaction(x: number, y: number, type: ReactionType): void {
+        new ReactionBubble(this, x, y, type);
     }
 }

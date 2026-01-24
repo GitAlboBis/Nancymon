@@ -3,6 +3,14 @@ import { PreloaderScene } from './scenes/PreloaderScene';
 import { WorldScene } from './scenes/WorldScene';
 import { BattleScene } from './scenes/BattleScene';
 import { FinaleScene } from './scenes/FinaleScene';
+import { CityScene } from './scenes/CityScene';
+import { CafeScene } from './scenes/CafeScene';
+import { HudOverlay } from './ui/HudOverlay';
+import { MemoryAlbumScene } from './scenes/MemoryAlbumScene';
+import { JournalScene } from './scenes/JournalScene';
+import { BagScene } from './scenes/BagScene';
+import { TitleScene } from './scenes/TitleScene';
+import { SystemMenuScene } from './scenes/SystemMenuScene';
 import { GAME_WIDTH, GAME_HEIGHT } from './config/GameConfig';
 
 /**
@@ -27,10 +35,10 @@ const config: Phaser.Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            debug: false // Set to true to see collision boxes
+            debug: true // Set to true to see collision boxes
         }
     },
-    scene: [PreloaderScene, WorldScene, BattleScene, FinaleScene]
+    scene: [PreloaderScene, TitleScene, WorldScene, BattleScene, FinaleScene, CityScene, CafeScene, HudOverlay, MemoryAlbumScene, JournalScene, BagScene, SystemMenuScene]
 };
 
 // Game instance (created after video intro)

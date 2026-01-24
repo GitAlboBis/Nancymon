@@ -130,3 +130,67 @@ export function getMoveDescription(moveId: string): string {
 export function getVictoryMessage(): string {
   return getRandomText(BattleText.victory);
 }
+
+// ============================================================================
+// DATE NIGHT MINI-GAME DATA
+// ============================================================================
+
+export interface DateOption {
+  text: string;
+  score: number; // 0 = Bad, 1 = Ok, 2 = Perfect
+  response: string[]; // Partner's reaction
+}
+
+export interface DateQuestion {
+  id: string;
+  question: string;
+  options: DateOption[];
+}
+
+export const DateQuestions: DateQuestion[] = [
+  {
+    id: 'food',
+    question: "Che ordiniamo da mangiare?",
+    options: [
+      { text: "Solo un'insalata scondita.", score: 0, response: ["Oh... sei a dieta?", "Che tristezza..."] },
+      { text: "La torta al cioccolato gigante!", score: 2, response: ["Sì! È per questo che ti amo!", "Dividiamola!"] },
+      { text: "Un semplice caffè.", score: 1, response: ["Semplice ed elegante.", "Mi piace."] }
+    ]
+  },
+  {
+    id: 'topic_vacation',
+    question: "Dove vorresti andare per la prossima vacanza?",
+    options: [
+      { text: "Rimaniamo a casa a programmare.", score: 1, response: ["Produttivo... ma un po' noioso?", "Fermati un attimo!"] },
+      { text: "In Giappone!", score: 2, response: ["Voglio vedere Akihabara!", "Sarebbe un sogno!"] },
+      { text: "Da mia madre.", score: 0, response: ["Ehm... certo...", "Forse un'altra volta?"] }
+    ]
+  },
+  {
+    id: 'compliment',
+    question: "Cosa noti di diverso in me?",
+    options: [
+      { text: "Hai cambiato pettinatura?", score: 1, response: ["Quasi...", "Ci sei vicino."] },
+      { text: "Sei pixelata come sempre.", score: 0, response: ["Spiritoso...", "Molto divertente."] },
+      { text: "Quel sorriso illumina la stanza.", score: 2, response: ["Aw, smettila!", "Arrossisco..."] }
+    ]
+  },
+  {
+    id: 'activity',
+    question: "Cosa facciamo dopo il caffè?",
+    options: [
+      { text: "Andiamo a combattere mostri!", score: 2, response: ["Sì! Spacchiamo tutto!", "Sono carica!"] },
+      { text: "Andiamo a dormire.", score: 0, response: ["Già stanco?", "Che noia..."] },
+      { text: "Facciamo una passeggiata.", score: 1, response: ["Romantico.", "Mi piace l'idea."] }
+    ]
+  }
+];
+
+/**
+ * Get random unique questions for the date
+ */
+export function getRandomDateQuestions(count: number): DateQuestion[] {
+  // Shuffle array
+  const shuffled = [...DateQuestions].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}

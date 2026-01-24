@@ -4,6 +4,8 @@
  * Theme: Romantic/stress-relief - reducing stress through love and care
  */
 
+import { StatusType, ActiveStatus } from '../battle/BattleStatus';
+
 // ============================================================================
 // INTERFACES
 // ============================================================================
@@ -19,6 +21,9 @@ export interface Move {
     description: string;     // Flavor text shown in text box
     emoji: string;           // Visual indicator
     type: 'comfort' | 'heal' | 'special';
+    statusEffect?: StatusType; // Status applied to target
+    statusChance?: number;     // 0.0 to 1.0
+    selfStatus?: StatusType;   // Status applied to self
 }
 
 /**
@@ -34,6 +39,9 @@ export interface Memory {
     moves: Move[];           // Available moves
     description: string;     // Flavor text
     level: number;
+    xp: number;              // Current XP
+    xpToNextLevel: number;   // XP required for next level
+    activeStatuses: ActiveStatus[];
 }
 
 /**
@@ -50,6 +58,8 @@ export interface StressEnemy {
     attackDescription: string;
     level: number;
     vibeReward: number;      // Vibe restored on victory
+    xpReward: number;        // XP gained on victory
+    activeStatuses: ActiveStatus[];
 }
 
 /**
@@ -72,7 +82,9 @@ export const MOVES: Record<string, Move> = {
         power: 15,
         description: 'You gave {enemy} a warm, comforting hug!',
         emoji: '🤗',
-        type: 'comfort'
+        type: 'comfort',
+        statusEffect: 'BLUSHING',
+        statusChance: 0.3
     },
     joke: {
         id: 'joke',
@@ -80,7 +92,9 @@ export const MOVES: Record<string, Move> = {
         power: 20,
         description: 'You shared a silly joke! {enemy} can\'t help but smile.',
         emoji: '😄',
-        type: 'comfort'
+        type: 'comfort',
+        statusEffect: 'LAUGHING',
+        statusChance: 0.4
     },
     kiss: {
         id: 'kiss',
@@ -88,7 +102,10 @@ export const MOVES: Record<string, Move> = {
         power: 30,
         description: 'A gentle kiss melts away the tension...',
         emoji: '💋',
-        type: 'comfort'
+        type: 'comfort',
+        statusEffect: 'INSPIRED', // Inspires the player?
+        selfStatus: 'INSPIRED',   // Actually let's inspire the player
+        statusChance: 0.5
     },
     words: {
         id: 'words',
@@ -96,7 +113,9 @@ export const MOVES: Record<string, Move> = {
         power: 10,
         description: 'You whispered sweet, encouraging words.',
         emoji: '💕',
-        type: 'heal'  // This one also heals the player slightly
+        type: 'heal',  // This one also heals the player slightly
+        selfStatus: 'PROUD',
+        statusChance: 0.2
     },
     cuddle: {
         id: 'cuddle',
@@ -112,7 +131,9 @@ export const MOVES: Record<string, Move> = {
         power: 18,
         description: 'You broke into a goofy dance! The mood lightens.',
         emoji: '💃',
-        type: 'special'
+        type: 'special',
+        statusEffect: 'CONFUSED',
+        statusChance: 0.6
     }
 };
 
@@ -130,7 +151,9 @@ export const STRESS_ENEMIES: Record<string, Omit<StressEnemy, 'currentStress'>> 
         attackName: 'Deadline Pressure',
         attackDescription: 'Work Stress reminds you of pending deadlines!',
         level: 3,
-        vibeReward: 10
+        vibeReward: 10,
+        xpReward: 30,
+        activeStatuses: []
     },
     anxietyCloud: {
         id: 'anxietyCloud',
@@ -141,7 +164,9 @@ export const STRESS_ENEMIES: Record<string, Omit<StressEnemy, 'currentStress'>> 
         attackName: 'Overthinking',
         attackDescription: 'Anxiety Cloud fills your mind with worries!',
         level: 5,
-        vibeReward: 15
+        vibeReward: 15,
+        xpReward: 50,
+        activeStatuses: []
     },
     loneliness: {
         id: 'loneliness',
@@ -152,7 +177,9 @@ export const STRESS_ENEMIES: Record<string, Omit<StressEnemy, 'currentStress'>> 
         attackName: 'Isolation',
         attackDescription: 'Loneliness makes the world feel distant...',
         level: 8,
-        vibeReward: 25
+        vibeReward: 25,
+        xpReward: 80,
+        activeStatuses: []
     },
     mondayBlues: {
         id: 'mondayBlues',
@@ -163,7 +190,9 @@ export const STRESS_ENEMIES: Record<string, Omit<StressEnemy, 'currentStress'>> 
         attackName: 'Alarm Clock',
         attackDescription: 'Monday Blues hits you with early morning dread!',
         level: 2,
-        vibeReward: 8
+        vibeReward: 8,
+        xpReward: 20,
+        activeStatuses: []
     },
     socialDrain: {
         id: 'socialDrain',
@@ -174,7 +203,9 @@ export const STRESS_ENEMIES: Record<string, Omit<StressEnemy, 'currentStress'>> 
         attackName: 'Awkward Silence',
         attackDescription: 'Social Drain makes everything feel exhausting!',
         level: 4,
-        vibeReward: 12
+        vibeReward: 12,
+        xpReward: 40,
+        activeStatuses: []
     }
 };
 
@@ -190,7 +221,10 @@ export const DEFAULT_PLAYER_MEMORY: Memory = {
     sprite: 'player',
     moves: [MOVES.hug, MOVES.joke, MOVES.kiss, MOVES.words],
     description: 'The power of love and connection.',
-    level: 5
+    level: 5,
+    xp: 0,
+    xpToNextLevel: 500,
+    activeStatuses: []
 };
 
 // ============================================================================
@@ -206,12 +240,14 @@ export function createEnemyInstance(enemyId: string): StressEnemy {
         // Default to work stress if not found
         return {
             ...STRESS_ENEMIES.workStress,
-            currentStress: STRESS_ENEMIES.workStress.maxStress
+            currentStress: STRESS_ENEMIES.workStress.maxStress,
+            activeStatuses: []
         };
     }
     return {
         ...template,
-        currentStress: template.maxStress
+        currentStress: template.maxStress,
+        activeStatuses: []
     };
 }
 
