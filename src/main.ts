@@ -11,6 +11,7 @@ import { JournalScene } from './scenes/JournalScene';
 import { BagScene } from './scenes/BagScene';
 import { TitleScene } from './scenes/TitleScene';
 import { SystemMenuScene } from './scenes/SystemMenuScene';
+import { GardenScene } from './scenes/GardenScene';
 import { GAME_WIDTH, GAME_HEIGHT } from './config/GameConfig';
 
 /**
@@ -38,7 +39,7 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: true // Set to true to see collision boxes
         }
     },
-    scene: [PreloaderScene, TitleScene, WorldScene, BattleScene, FinaleScene, CityScene, CafeScene, HudOverlay, MemoryAlbumScene, JournalScene, BagScene, SystemMenuScene]
+    scene: [PreloaderScene, TitleScene, WorldScene, BattleScene, FinaleScene, CityScene, CafeScene, GardenScene, HudOverlay, MemoryAlbumScene, JournalScene, BagScene, SystemMenuScene]
 };
 
 // Game instance (created after video intro)

@@ -18,14 +18,23 @@ export class PreloaderScene extends Phaser.Scene {
         this.createPlaceholderAssets();
 
         // Load map assets
+        this.load.image('title-bg', '/assets/title-bg.png');
+
+        // Load map assets
         this.load.image('background', '/assets/background.png');
         this.load.image('battle-bg', '/assets/battle-bg.jpg');
-        this.load.image('heart', '/assets/heart.png');
-        this.load.image('kiss', '/assets/kiss.png');
-        this.load.image('map', '/assets/map.tmj');
+        this.load.image('forest-bg', '/assets/forest_bg.png');
+        this.load.image('route2_bg', '/assets/route2_bg.png');
         this.load.image('city-background', '/assets/city-background.png');
         this.load.image('cafe-interior', '/assets/cafe-interior.png');
-        this.load.image('title-bg', '/assets/title-bg.png');
+        this.load.image('mysterious_path_bg', '/assets/mysterious_path.png');
+
+        // Load map data (TMJ/JSON)
+        this.load.tilemapTiledJSON('map', '/assets/map.tmj');
+        this.load.tilemapTiledJSON('route2', '/assets/route2.tmj');
+        this.load.tilemapTiledJSON('secret_garden', '/assets/secret_garden.tmj');
+        this.load.tilemapTiledJSON('mysterious_path', '/assets/mysterious_path.tmj');
+
 
         // Load player spritesheet (32x48 per frame, 16 frames total in 4x4 grid)
         this.load.spritesheet('player', '/assets/player.png', {

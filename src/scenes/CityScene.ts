@@ -97,6 +97,20 @@ export class CityScene extends Phaser.Scene {
         this.dayNightOverlay = this.add.rectangle(0, 0, this.mapWidth, this.mapHeight, 0x000010, 0)
             .setOrigin(0, 0)
             .setDepth(90); // Below DebugUI (100) but above everything else
+
+        // Community Garden Entrance (e.g., top right)
+        this.add.text(600, 100, '🌻 GARDEN', {
+            fontSize: '14px',
+            color: '#ffffff',
+            backgroundColor: '#228822',
+            padding: { x: 4, y: 2 }
+        }).setOrigin(0.5);
+
+        const gardenZone = this.add.zone(600, 130, 80, 60);
+        this.physics.add.existing(gardenZone, true);
+        this.physics.add.overlap(this.player.sprite, gardenZone, () => {
+            this.scene.start('GardenScene');
+        });
     }
 
     update(time: number, delta: number): void {

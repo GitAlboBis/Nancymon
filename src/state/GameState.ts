@@ -4,7 +4,7 @@
  */
 
 import { getMemoryById, MemoryItem } from '../data/MemoriesData';
-
+import { GardenPlot } from '../data/GardenData';
 
 /**
  * Global game state singleton
@@ -12,6 +12,34 @@ import { getMemoryById, MemoryItem } from '../data/MemoriesData';
  */
 class GameStateManager {
     private static instance: GameStateManager;
+
+    // ============================================================================
+    // GARDEN
+    // ============================================================================
+
+    /** 6 Garden Plots */
+    private gardenPlots: GardenPlot[] = [
+        { index: 0, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
+        { index: 1, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
+        { index: 2, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
+        { index: 3, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
+        { index: 4, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
+        { index: 5, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false }
+    ];
+
+    public getGardenPlots(): GardenPlot[] {
+        return this.gardenPlots;
+    }
+
+    public getPlot(index: number): GardenPlot | undefined {
+        return this.gardenPlots[index];
+    }
+
+    public updatePlot(index: number, updates: Partial<GardenPlot>): void {
+        if (this.gardenPlots[index]) {
+            this.gardenPlots[index] = { ...this.gardenPlots[index], ...updates };
+        }
+    }
 
     // ============================================================================
     // COLLECTED MEMORIES
@@ -74,6 +102,9 @@ class GameStateManager {
         if (this.inventory.size === 0) {
             this.addItem('chocolate', 3);
             this.addItem('flower', 2);
+            // Give some seeds to start
+            this.addItem('seed_rose', 2);
+            this.addItem('seed_sunflower', 2);
         }
     }
 
@@ -222,6 +253,9 @@ class GameStateManager {
         this.activeQuestId = 'q1_start';
         this.completedQuestIds = [];
         this.completedObjectives = [];
+        this.gardenPlots = this.gardenPlots.map((p, i) => ({
+            index: i, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false
+        }));
         this.giveStarterItems();
         console.log('🔄 Game state reset');
     }
@@ -238,7 +272,8 @@ class GameStateManager {
             inventory: Object.fromEntries(this.inventory),
             activeQuestId: this.activeQuestId,
             completedQuestIds: this.completedQuestIds,
-            completedObjectives: this.completedObjectives
+            completedObjectives: this.completedObjectives,
+            gardenPlots: this.gardenPlots
         };
     }
 
@@ -254,6 +289,7 @@ class GameStateManager {
         activeQuestId?: string | null;
         completedQuestIds?: string[];
         completedObjectives?: string[];
+        gardenPlots?: GardenPlot[];
     }): void {
         if (data.collectedMemories) {
             this.collectedMemories = data.collectedMemories;
@@ -280,6 +316,9 @@ class GameStateManager {
         }
         if (data.completedObjectives) {
             this.completedObjectives = data.completedObjectives;
+        }
+        if (data.gardenPlots) {
+            this.gardenPlots = data.gardenPlots;
         }
         console.log('📂 Game state loaded');
     }

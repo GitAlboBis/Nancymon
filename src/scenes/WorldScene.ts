@@ -59,6 +59,10 @@ export class WorldScene extends Phaser.Scene {
     // Debug UI
     private debugText!: Phaser.GameObjects.Text;
 
+    // Map settings
+    private currentMapKey: string = 'map';
+    private currentBackgroundKey: string = 'background';
+
     // Touch controls for mobile
     private _touchControls!: TouchControls;
     private touchDirection: TouchDirection = null;
@@ -67,10 +71,14 @@ export class WorldScene extends Phaser.Scene {
         super({ key: 'WorldScene' });
     }
 
-    init(data?: { playerPosition?: { x: number; y: number }; playerVibe?: number }): void {
+    init(data?: { playerPosition?: { x: number; y: number }; playerVibe?: number; mapKey?: string; backgroundKey?: string }): void {
         if (data?.playerVibe !== undefined) {
             this.playerMemory.currentVibe = data.playerVibe;
         }
+
+        // Set map keys from data or default
+        this.currentMapKey = data?.mapKey || 'map';
+        this.currentBackgroundKey = data?.backgroundKey || 'background';
 
         // Check if finale should trigger (all memories collected)
         if (GameState.hasFlag('isReadyForFinale')) {
@@ -101,7 +109,10 @@ export class WorldScene extends Phaser.Scene {
         // ====================================================================
         // A. FORCE LOAD THE IMAGE DIRECTLY (NOT through tilemap)
         // ====================================================================
-        this.background = this.add.image(0, 0, 'background');
+        // ====================================================================
+        // A. FORCE LOAD THE IMAGE DIRECTLY (NOT through tilemap)
+        // ====================================================================
+        this.background = this.add.image(0, 0, this.currentBackgroundKey);
         this.background.setOrigin(0, 0);
         this.background.setDepth(-1); // Ensure it is BEHIND everything
 
@@ -243,7 +254,8 @@ export class WorldScene extends Phaser.Scene {
         this.collisionBodies = this.physics.add.staticGroup();
 
         // Load the tilemap using Phaser API
-        const map = this.make.tilemap({ key: 'map' });
+        // Load the tilemap using Phaser API
+        const map = this.make.tilemap({ key: this.currentMapKey });
 
         if (!map) {
             console.error('❌ Failed to create tilemap from key "map"');
@@ -440,6 +452,24 @@ export class WorldScene extends Phaser.Scene {
         this.input.keyboard!.on('keydown-TWO', () => this.weatherSystem.setWeather(WeatherType.RAIN));
         this.input.keyboard!.on('keydown-THREE', () => this.weatherSystem.setWeather(WeatherType.SNOW));
         this.input.keyboard!.on('keydown-FOUR', () => this.weatherSystem.setWeather(WeatherType.CHERRY_BLOSSOM));
+
+        // Debug: Switch Maps
+        this.input.keyboard!.on('keydown-NINE', () => {
+            console.log('🔄 Switching to Route 2...');
+            this.scene.restart({ mapKey: 'route2', backgroundKey: 'route2_bg' });
+        });
+        this.input.keyboard!.on('keydown-ZERO', () => {
+            console.log('🔄 Switching to Main Map...');
+            this.scene.restart({ mapKey: 'map', backgroundKey: 'background' });
+        });
+        this.input.keyboard!.on('keydown-EIGHT', () => {
+            console.log('🔄 Switching to Secret Garden...');
+            this.scene.restart({ mapKey: 'secret_garden', backgroundKey: 'forest-bg' });
+        });
+        this.input.keyboard!.on('keydown-SEVEN', () => {
+            console.log('🔄 Switching to Mysterious Path...');
+            this.scene.restart({ mapKey: 'mysterious_path', backgroundKey: 'mysterious_path_bg' });
+        });
 
         // System Menu
         this.input.keyboard!.on('keydown-ESC', () => this.openSystemMenu());
@@ -712,9 +742,9 @@ export class WorldScene extends Phaser.Scene {
             `Tile: (${this.player.tileX}, ${this.player.tileY})`,
             `World: (${playerWorldX}, ${playerWorldY})`,
             `Dir: ${Direction[this.player.currentDirection]}${touchDir ? ` (touch: ${touchDir})` : ''}`,
-            `Map: ${this.mapWidth}x${this.mapHeight}`,
+            `Map: ${this.mapWidth}x${this.mapHeight} (${this.currentMapKey})`,
             `[SPACE/A] Talk | [B] Battle | [M] Dex | [J] Journal | [I] Bag`,
-            `Weather: [1]None [2]Rain [3]Snow [4]Petals`
+            `Weather: [1-4] | Map: [9]Route2 [0]Main`
         ].join('\n'));
     }
     private showReaction(x: number, y: number, type: ReactionType): void {

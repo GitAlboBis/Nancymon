@@ -14,6 +14,7 @@ import { ITEMS } from '../data/Items';
 import { ReactionBubble, ReactionType } from '../ui/ReactionBubble';
 import { StatusType, createStatus, STATUS_DEFINITIONS } from '../battle/BattleStatus';
 import { BattleRhythmUI, RhythmResult } from '../ui/BattleRhythmUI';
+import { FloatingNumbers } from '../ui/FloatingNumbers';
 
 
 /**
@@ -75,6 +76,9 @@ export class BattleScene extends Phaser.Scene {
     // Action Command UI
     private rhythmUI!: BattleRhythmUI;
 
+    // Floating Numbers
+    private floatingNumbers!: FloatingNumbers;
+
     constructor() {
         super({ key: 'BattleScene' });
     }
@@ -126,7 +130,12 @@ export class BattleScene extends Phaser.Scene {
 
         // Create Rhythm UI
         this.rhythmUI = new BattleRhythmUI(this, width / 2, height * 0.85);
+        this.rhythmUI = new BattleRhythmUI(this, width / 2, height * 0.85);
         this.rhythmUI.setDepth(200); // Ensure on top
+
+        // Create Floating Numbers Container
+        this.floatingNumbers = new FloatingNumbers(this, 0, 0);
+        this.floatingNumbers.setDepth(300); // Highest priority
 
         // Setup input
         this.setupInput();
@@ -871,6 +880,8 @@ export class BattleScene extends Phaser.Scene {
             this.queueText('💦 Missed the rhythm... (0.8x Power)');
         }
 
+        const isCrit = result === 'PERFECT';
+
         // Status Modifiers
         if (this.hasStatus('player', 'INSPIRED')) {
             damage = Math.floor(damage * 2);
@@ -905,9 +916,21 @@ export class BattleScene extends Phaser.Scene {
                 // Apply damage
                 this.enemy.currentStress = Math.max(0, this.enemy.currentStress - damage);
 
+                // Floating Text
+                this.floatingNumbers.x = this.enemySprite.x;
+                this.floatingNumbers.y = this.enemySprite.y - 50;
+                this.floatingNumbers.showText(damage, isCrit ? 'critical' : 'damage');
+
                 // Shake enemy
-                this.cameras.main.shake(100, 0.01);
+                if (isCrit) {
+                    this.cameras.main.shake(300, 0.02);
+                    this.cameras.main.flash(200, 255, 255, 255); // White flash for crit
+                } else {
+                    this.cameras.main.shake(100, 0.01);
+                }
+
                 this.tweens.add({
+
                     targets: this.enemySprite,
                     x: this.enemySprite.x + 5,
                     duration: 50,
@@ -938,6 +961,13 @@ export class BattleScene extends Phaser.Scene {
                             );
                             this.updatePlayerBar();
                             this.queueText(`You feel a warm glow... (+${healAmount} Vibe) 💕`);
+
+                            // Visual heal logic
+                            this.time.delayedCall(500, () => {
+                                this.floatingNumbers.x = this.playerSprite.x;
+                                this.floatingNumbers.y = this.playerSprite.y - 50;
+                                this.floatingNumbers.showText(healAmount, 'heal');
+                            });
                         }
 
                         this.queueText(`${this.enemy.name}'s stress decreased by ${damage}!`);
@@ -986,6 +1016,10 @@ export class BattleScene extends Phaser.Scene {
                 );
                 this.updatePlayerBar();
                 this.queueText(`You feel refreshed! (+${healAmount} Vibe)`);
+
+                this.floatingNumbers.x = this.playerSprite.x;
+                this.floatingNumbers.y = this.playerSprite.y - 50;
+                this.floatingNumbers.showText(healAmount, 'heal');
             }
 
             if (item.type === 'comfort' || item.type === 'special') {
@@ -1051,6 +1085,14 @@ export class BattleScene extends Phaser.Scene {
             onComplete: () => {
                 // Apply damage to player
                 this.playerMemory.currentVibe = Math.max(0, this.playerMemory.currentVibe - damage);
+
+                // Floating text for player damage
+                this.floatingNumbers.x = this.playerSprite.x;
+                this.floatingNumbers.y = this.playerSprite.y - 50;
+                this.floatingNumbers.showText(damage, 'damage');
+
+                // Screen shake
+                this.cameras.main.shake(200, 0.015);
 
                 // Flash player
                 this.tweens.add({
@@ -1295,6 +1337,12 @@ export class BattleScene extends Phaser.Scene {
             this.queueText(`${targetName} became ${STATUS_DEFINITIONS[statusId].name.toLowerCase()}! ${STATUS_DEFINITIONS[statusId].emoji}`);
             // Force UI update
             if (target === 'player') this.updatePlayerBar(); else this.updateEnemyBar();
+
+            // Floating Status Text
+            const sprite = target === 'player' ? this.playerSprite : this.enemySprite;
+            this.floatingNumbers.x = sprite.x;
+            this.floatingNumbers.y = sprite.y - 60;
+            this.floatingNumbers.showText(STATUS_DEFINITIONS[statusId].name, 'status');
         }
     }
 
