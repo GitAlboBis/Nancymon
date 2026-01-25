@@ -49,7 +49,7 @@ export const WorldDialogues: Record<string, string[]> = {
 
   partner_talk_love: [
     "Sai che ti amo più di ogni altra cosa?",
-    "Anche più della pizza."
+    "Anche più del butter chicken"
   ]
 };
 
