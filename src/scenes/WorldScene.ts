@@ -10,19 +10,21 @@ import {
 } from '../config/GameConfig';
 import { TimeSystem } from '../systems/TimeSystem';
 import { getRandomEnemy, DEFAULT_PLAYER_MEMORY, BattleData, Memory } from '../data/Memories';
-import { getPartnerDialogue } from '../data/Dialogues';
+import { getPartnerDialogue, WorldDialogues } from '../data/Dialogues';
 import { GameState } from '../state/GameState';
 import { ReactionBubble, ReactionType } from '../ui/ReactionBubble';
 import { WeatherSystem, WeatherType } from '../systems/WeatherSystem';
 
 
 /**
- * Interface for storing exit zone data with connection properties
+ * Interface for storing teleport zone data with connection properties.
+ * Used for both ExitZone and EnterZone objects (bidirectional portals).
  */
-interface ExitZoneData {
+interface TeleportZoneData {
     zone: Phaser.GameObjects.Zone;
     targetMap?: string;
     targetConnID?: string;
+    connID?: string;
 }
 
 /**
@@ -49,8 +51,9 @@ export class WorldScene extends Phaser.Scene {
 
     // Collision zones
     private collisionBodies: Phaser.Physics.Arcade.StaticGroup | null = null;
-    private exitZones: ExitZoneData[] = [];
+    private teleportZones: TeleportZoneData[] = [];
     private interactableObjects: Map<string, Phaser.GameObjects.Zone> = new Map();
+    private gardenZone: Phaser.GameObjects.Zone | null = null;
 
     // Player memory (persistent across battles)
     private playerMemory: Memory = { ...DEFAULT_PLAYER_MEMORY };
@@ -88,8 +91,11 @@ export class WorldScene extends Phaser.Scene {
         }
 
         // Set map keys from data or default
-        this.currentMapKey = data?.mapKey || 'map';
-        this.currentBackgroundKey = data?.backgroundKey || 'background';
+        this.currentMapKey = data?.mapKey || 'house';
+        this.currentBackgroundKey = data?.backgroundKey || 'house_bg';
+
+        // Persist current map in GameState for save/load
+        GameState.setCurrentMap(this.currentMapKey);
 
         // Check if finale should trigger (all memories collected)
         if (GameState.hasFlag('isReadyForFinale')) {
@@ -101,7 +107,7 @@ export class WorldScene extends Phaser.Scene {
     }
 
     create(): void {
-        console.log('🗺️ Map loaded');
+        console.log('🗺️ Map loaded:', this.currentMapKey, '| Background:', this.currentBackgroundKey);
         console.log('🎮 Player loaded');
 
         this.timeSystem = TimeSystem.getInstance();
@@ -143,9 +149,10 @@ export class WorldScene extends Phaser.Scene {
         this.isTransitioning = false;
         this.isInDialogue = false;
         this.canTriggerExit = false; // Disable exit triggers until player leaves spawn zone
-        this.exitZones = [];
+        this.teleportZones = [];
         this.encounterZones = [];
         this.interactableObjects.clear();
+        this.gardenZone = null;
 
         // ====================================================================
         // D. LOAD COLLISIONS FROM JSON
@@ -274,7 +281,10 @@ export class WorldScene extends Phaser.Scene {
         this.updateDebugUI();
 
         // Check for exit zone overlap
-        this.checkExitZones();
+        this.checkTeleportZones();
+
+        // Check for garden zone overlap
+        this.checkGardenZone();
     }
 
 
@@ -287,7 +297,6 @@ export class WorldScene extends Phaser.Scene {
         this.collisionBodies = this.physics.add.staticGroup();
 
         // Load the tilemap using Phaser API
-        // Load the tilemap using Phaser API
         const map = this.make.tilemap({ key: this.currentMapKey });
 
         if (!map) {
@@ -295,44 +304,70 @@ export class WorldScene extends Phaser.Scene {
             return;
         }
 
-        // Get the Collisions object layer (case-sensitive!)
-        const objectLayer = map.getObjectLayer('Collisions');
-
-        if (!objectLayer) {
-            console.error('❌ Layer "Collisions" not found! Check Tiled layer name (case-sensitive)');
-            console.log('Available layers:', map.layers.map(l => l.name));
+        // ====================================================================
+        // Parse ALL object layers for collisions, zones, and interactables
+        // Supports maps with zones in 'Collisions', 'Zones', or any layer
+        // ====================================================================
+        if (!map.objects || map.objects.length === 0) {
+            console.error('❌ No object layers found in tilemap!');
             return;
         }
 
-        console.log(`✅ Found "Collisions" layer with ${objectLayer.objects.length} objects`);
+        for (const objectLayer of map.objects) {
+            console.log(`📋 Parsing object layer "${objectLayer.name}" with ${objectLayer.objects.length} objects (map: ${this.currentMapKey})`);
 
-        // Process each object in the layer
-        objectLayer.objects.forEach((obj: any) => {
-            const name = obj.name || '';
-            const x = obj.x;
-            const y = obj.y;
-            const width = obj.width;
-            const height = obj.height;
-
-            if (name === 'ExitZone') {
-                // Read custom properties for connection system
-                const properties = obj.properties as Array<{ name: string; value: any }> | undefined;
-                const targetMap = properties?.find(p => p.name === 'targetMap')?.value;
-                const targetConnID = properties?.find(p => p.name === 'targetConnID')?.value;
-
-                // Create exit zone with connection data
-                this.createExitZone(x, y, width, height, targetMap, targetConnID);
-            } else if (name === 'PC') {
-                // Create interactable PC object
-                this.createInteractableObject('PC', x, y, width, height);
-            } else {
-                // Create wall collision body
-                this.createCollisionBody(x, y, width, height);
+            // Skip 'Encounters' layer here - it is handled separately below to be non-collidable
+            if (objectLayer.name === 'Encounters') {
+                continue;
             }
-        });
+
+            objectLayer.objects.forEach((obj: any) => {
+                const name = obj.name || '';
+                const x = obj.x;
+                const y = obj.y;
+                const width = obj.width;
+                const height = obj.height;
+
+                if (name === 'ExitZone') {
+                    // Read custom properties for connection system
+                    const properties = obj.properties as Array<{ name: string; value: any }> | undefined;
+                    const targetMap = properties?.find(p => p.name === 'targetMap')?.value;
+                    const targetConnID = properties?.find(p => p.name === 'targetConnID')?.value;
+                    const connID = properties?.find(p => p.name === 'connID')?.value;
+
+                    // Create teleport zone with connection data
+                    this.createTeleportZone(x, y, width, height, targetMap, targetConnID, connID);
+                } else if (name === 'EnterZone') {
+                    // Read custom properties for bidirectional connection system
+                    const properties = obj.properties as Array<{ name: string; value: any }> | undefined;
+                    const targetMap = properties?.find(p => p.name === 'targetMap')?.value;
+                    const targetConnID = properties?.find(p => p.name === 'targetConnID')?.value;
+                    const connID = properties?.find(p => p.name === 'connID')?.value;
+
+                    // Only register as trigger if it has a targetMap (bidirectional portal)
+                    // EnterZones without targetMap remain passive spawn points
+                    if (targetMap) {
+                        this.createTeleportZone(x, y, width, height, targetMap, targetConnID, connID);
+                    }
+                } else if (name === 'PC') {
+                    // Create interactable PC object
+                    this.createInteractableObject('PC', x, y, width, height);
+                } else if (name === 'Garden') {
+                    // Create Garden zone for scene transition
+                    this.gardenZone = this.add.zone(x + width / 2, y + height / 2, width, height);
+                    console.log(`🌻 Created Garden zone at (${x}, ${y}) ${width}x${height}`);
+                } else if (WorldDialogues[name]) {
+                    // AUTO-DETECT: If object name exists in WorldDialogues, treat as interactable
+                    this.createInteractableObject(name, x, y, width, height);
+                } else if (width > 0 && height > 0) {
+                    // Create wall collision body (only for unnamed objects with dimensions)
+                    this.createCollisionBody(x, y, width, height);
+                }
+            });
+        }
 
         // ====================================================================
-        // Parse 'Encounters' layer (Tall Grass)
+        // Parse 'Encounters' layer (Tall Grass) — uses dedicated object layer
         // ====================================================================
         const encounterLayer = map.getObjectLayer('Encounters');
 
@@ -369,17 +404,19 @@ export class WorldScene extends Phaser.Scene {
     }
 
     /**
-     * Create an exit zone (sensor for scene transitions)
+     * Create a teleport zone (sensor for bidirectional scene transitions)
+     * Used for both ExitZone and EnterZone objects.
      */
-    private createExitZone(x: number, y: number, width: number, height: number, targetMap?: string, targetConnID?: string): void {
+    private createTeleportZone(x: number, y: number, width: number, height: number, targetMap?: string, targetConnID?: string, connID?: string): void {
         const zone = this.add.zone(x + width / 2, y + height / 2, width, height);
-        const exitData: ExitZoneData = {
+        const teleportData: TeleportZoneData = {
             zone: zone,
             targetMap: targetMap,
-            targetConnID: targetConnID
+            targetConnID: targetConnID,
+            connID: connID
         };
-        this.exitZones.push(exitData);
-        console.log(`🚪 Created exit zone at (${x}, ${y})${targetMap ? ` -> ${targetMap}` : ''}${targetConnID ? ` (${targetConnID})` : ''}`);
+        this.teleportZones.push(teleportData);
+        console.log(`🚪 Created teleport zone at (${x}, ${y})${connID ? ` [${connID}]` : ''}${targetMap ? ` -> ${targetMap}` : ''}${targetConnID ? ` (${targetConnID})` : ''}`);
     }
 
     /**
@@ -392,33 +429,41 @@ export class WorldScene extends Phaser.Scene {
     }
 
     /**
-     * Check if player overlaps with exit zones
+     * Check if player overlaps with teleport zones (ExitZone or EnterZone)
      * Implements overlap-exit detection for safe bidirectional transitions
      */
-    private checkExitZones(): void {
+    private checkTeleportZones(): void {
         if (this.isTransitioning) return;
 
         const playerSprite = this.player.sprite;
         const playerBounds = playerSprite.getBounds();
 
-        // Check if player is currently overlapping any exit zone
+        // Check if player is currently overlapping any teleport zone
         let isOverlappingAnyZone = false;
-        let overlappedZone: ExitZoneData | null = null;
+        let overlappedZone: TeleportZoneData | null = null;
 
-        for (const exitData of this.exitZones) {
-            const zoneBounds = exitData.zone.getBounds();
+        for (const teleportData of this.teleportZones) {
+            const zoneBounds = teleportData.zone.getBounds();
             if (Phaser.Geom.Rectangle.Overlaps(playerBounds, zoneBounds)) {
                 isOverlappingAnyZone = true;
-                overlappedZone = exitData;
+                overlappedZone = teleportData;
                 break;
             }
         }
 
-        // If player is NOT overlapping any zone, enable exit triggers
+        // Also check garden zone overlap
+        if (!isOverlappingAnyZone && this.gardenZone) {
+            const gardenBounds = this.gardenZone.getBounds();
+            if (Phaser.Geom.Rectangle.Overlaps(playerBounds, gardenBounds)) {
+                isOverlappingAnyZone = true;
+            }
+        }
+
+        // If player is NOT overlapping any zone (teleport or garden), enable triggers
         if (!isOverlappingAnyZone) {
             if (!this.canTriggerExit) {
                 this.canTriggerExit = true;
-                console.log('✅ Exit trigger enabled - player left spawn zone');
+                console.log('✅ Teleport trigger enabled - player left spawn zone');
             }
             return;
         }
@@ -426,6 +471,32 @@ export class WorldScene extends Phaser.Scene {
         // Player IS overlapping a zone - only trigger if allowed
         if (this.canTriggerExit && overlappedZone) {
             this.changeScene(overlappedZone.targetMap, overlappedZone.targetConnID);
+        }
+    }
+
+    /**
+     * Check if player overlaps with the Garden zone
+     */
+    private checkGardenZone(): void {
+        if (this.isTransitioning || !this.gardenZone || !this.canTriggerExit) return;
+
+        const playerBounds = this.player.sprite.getBounds();
+        const gardenBounds = this.gardenZone.getBounds();
+
+        if (Phaser.Geom.Rectangle.Overlaps(playerBounds, gardenBounds)) {
+            this.isTransitioning = true;
+            console.log('🌻 Entering Garden...');
+
+            this.input.keyboard!.enabled = false;
+            this.cameras.main.fadeOut(500, 0, 0, 0);
+
+            this.cameras.main.once('camerafadeoutcomplete', () => {
+                this.input.keyboard!.enabled = true;
+                this.scene.start('GardenScene', {
+                    returnMap: this.currentMapKey,
+                    returnBackground: this.currentBackgroundKey
+                });
+            });
         }
     }
 
@@ -473,14 +544,13 @@ export class WorldScene extends Phaser.Scene {
      * @returns Pixel coordinates { x, y } or null if not found
      */
     private findEntranceByConnID(map: Phaser.Tilemaps.Tilemap, connID: string): { x: number; y: number } | null {
-        // Search all object layers for EnterZone with matching connID
-        for (const layer of map.layers) {
-            // Check if the layer is an object group layer
-            const objectLayer = map.getObjectLayer(layer.name);
-            if (!objectLayer) continue;
+        // Search all object group layers for EnterZone/ExitZone with matching connID
+        // Uses map.objects (object layers) instead of map.layers (tile layers)
+        if (!map.objects) return null;
 
+        for (const objectLayer of map.objects) {
             for (const obj of objectLayer.objects) {
-                if (obj.name === 'EnterZone') {
+                if (obj.name === 'EnterZone' || obj.name === 'ExitZone') {
                     const properties = obj.properties as Array<{ name: string; value: any }> | undefined;
                     const entranceConnID = properties?.find(p => p.name === 'connID')?.value;
 
@@ -568,12 +638,16 @@ export class WorldScene extends Phaser.Scene {
             this.scene.restart({ mapKey: 'route2', backgroundKey: 'route2_bg' });
         });
         this.input.keyboard!.on('keydown-ZERO', () => {
-            console.log('🔄 Switching to Main Map...');
-            this.scene.restart({ mapKey: 'map', backgroundKey: 'background' });
+            console.log('🔄 Switching to House...');
+            this.scene.restart({ mapKey: 'house', backgroundKey: 'house_bg' });
         });
         this.input.keyboard!.on('keydown-EIGHT', () => {
-            console.log('🔄 Switching to Secret Garden...');
-            this.scene.restart({ mapKey: 'secret_garden', backgroundKey: 'forest-bg' });
+            console.log('🔄 Switching to Forest...');
+            this.scene.restart({ mapKey: 'forest', backgroundKey: 'forest_bg' });
+        });
+        this.input.keyboard!.on('keydown-G', () => {
+            console.log('🔄 Debug jumping to Garden...');
+            this.scene.start('GardenScene');
         });
         this.input.keyboard!.on('keydown-SEVEN', () => {
             console.log('🔄 Switching to Mysterious Path...');
@@ -684,8 +758,14 @@ export class WorldScene extends Phaser.Scene {
         const facingWorldX = facingTile.x * TILE_SIZE + TILE_SIZE / 2;
         const facingWorldY = facingTile.y * TILE_SIZE + TILE_SIZE / 2;
 
+        console.log(`🔍 Interaction at (${facingTile.x}, ${facingTile.y})`);
+        if (this.partner) {
+            console.log(`   Partner at (${this.partner.tileX}, ${this.partner.tileY})`);
+        }
+
         // Check for partner in front of player
         if (this.partner && this.partner.isAtTile(facingTile.x, facingTile.y)) {
+            console.log('💕 Partner found!');
             this.startPartnerDialogue();
             return;
         }
@@ -695,10 +775,13 @@ export class WorldScene extends Phaser.Scene {
             const bounds = zone.getBounds();
             if (facingWorldX >= bounds.left && facingWorldX <= bounds.right &&
                 facingWorldY >= bounds.top && facingWorldY <= bounds.bottom) {
+                console.log(`💻 Object found: ${name}`);
                 this.handleObjectInteraction(name);
                 return;
             }
         }
+
+        console.log('❌ No interaction found.');
     }
 
     /**
@@ -712,12 +795,15 @@ export class WorldScene extends Phaser.Scene {
 
         let dialogue: string[] = [];
 
-        switch (objectName) {
-            case 'PC':
-                dialogue = ["È qui che hai programmato questo gioco per me? Che meta-narrativa!"];
-                break;
-            default:
-                dialogue = ["Hmm, interessante..."];
+        // Check matching dialogue in data/Dialogues.ts
+        if (WorldDialogues[objectName]) {
+            dialogue = WorldDialogues[objectName];
+        } else if (objectName === 'PC') {
+            // Fallback/Special cases
+            dialogue = ["È qui che hai programmato questo gioco per me? Che meta-narrativa!"];
+        } else {
+            // Generic fallback
+            dialogue = ["Hmm, interessante..."];
         }
 
         this.dialogueBox.show('', dialogue, () => {
@@ -725,6 +811,9 @@ export class WorldScene extends Phaser.Scene {
         });
     }
 
+    /**
+     * Starts dialogue with the partner
+     */
     /**
      * Starts dialogue with the partner
      */
@@ -736,6 +825,7 @@ export class WorldScene extends Phaser.Scene {
             this.showReaction(this.partner.sprite.x, this.partner.sprite.y - 40, 'love');
         }
 
+        // Get random dialogue from dialogues system
         const dialogue = getPartnerDialogue();
 
         this.dialogueBox.show('💕', dialogue, () => {

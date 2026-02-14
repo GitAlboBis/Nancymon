@@ -1,56 +1,60 @@
-export interface PlantType {
+export interface PlantDef {
     id: string;
     name: string;
-    growthTime: number; // Minutes to mature
-    sproutImage: string; // Key for sprout sprite (usually generic)
-    matureImage: string; // Key for mature plant sprite
-    produceId: string; // Item ID received when harvested
-    yield: number; // How many items received
+    stages: number; // Total stages (e.g. 4: Seed -> Sprout -> Bloom -> Ripe)
+    maxGrowthPoints: number; // Total "presses" to reach full maturity
+    harvestItemId: string; // ID from Items.ts
+    sprites: string[]; // Sprite keys/frames for each stage. If not used, we rely on emojis/generic sprites.
     emoji: string;
 }
 
 export interface GardenPlot {
     index: number;
+    isUnlocked: boolean;
     plantId: string | null;
-    growthStage: 'empty' | 'seed' | 'sprout' | 'mature';
-    growthProgress: number; // 0 to 1
-    waterLevel: number; // 0 to 1 (decays over time)
-    isWithered: boolean;
+    currentStage: number; // 0 to (PlantDef.stages - 1)
+    currentGrowthPoints: number;
 }
 
-export const PLANTS: Record<string, PlantType> = {
+export const PLANT_DEFINITIONS: Record<string, PlantDef> = {
+    love_berry: {
+        id: 'love_berry',
+        name: 'Love Berry',
+        stages: 4,
+        maxGrowthPoints: 20, // 20 clicks to fully grow
+        harvestItemId: 'love_berry',
+        sprites: ['plant_seed', 'plant_sprout', 'plant_bloom', 'plant_ripe'],
+        emoji: '🍓'
+    },
     rose: {
         id: 'rose',
         name: 'Rose',
-        growthTime: 2, // Quick for demo
-        sproutImage: 'plant_sprout',
-        matureImage: 'plant_rose',
-        produceId: 'flower_rose',
-        yield: 1,
+        stages: 4,
+        maxGrowthPoints: 30,
+        harvestItemId: 'flower_rose',
+        sprites: [],
         emoji: '🌹'
     },
     sunflower: {
         id: 'sunflower',
         name: 'Sunflower',
-        growthTime: 5,
-        sproutImage: 'plant_sprout',
-        matureImage: 'plant_sunflower',
-        produceId: 'flower_sunflower',
-        yield: 2,
+        stages: 4,
+        maxGrowthPoints: 40,
+        harvestItemId: 'flower_sunflower',
+        sprites: [],
         emoji: '🌻'
     },
     coffee_bean: {
         id: 'coffee_bean',
-        name: 'Coffee Plant',
-        growthTime: 10,
-        sproutImage: 'plant_sprout',
-        matureImage: 'plant_coffee',
-        produceId: 'coffee_beans',
-        yield: 3,
+        name: 'Coffee',
+        stages: 4,
+        maxGrowthPoints: 50,
+        harvestItemId: 'coffee_beans',
+        sprites: [],
         emoji: '☕'
     }
 };
 
-export const getPlantById = (id: string): PlantType | undefined => {
-    return PLANTS[id];
+export const getPlantDef = (id: string): PlantDef | undefined => {
+    return PLANT_DEFINITIONS[id];
 };

@@ -17,15 +17,14 @@ class GameStateManager {
     // GARDEN
     // ============================================================================
 
-    /** 6 Garden Plots */
-    private gardenPlots: GardenPlot[] = [
-        { index: 0, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
-        { index: 1, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
-        { index: 2, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
-        { index: 3, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
-        { index: 4, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false },
-        { index: 5, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false }
-    ];
+    /** 12 Garden Plots (4x3 Grid) */
+    private gardenPlots: GardenPlot[] = Array.from({ length: 12 }, (_, i) => ({
+        index: i,
+        isUnlocked: true, // All unlocked for now
+        plantId: null,
+        currentStage: 0,
+        currentGrowthPoints: 0
+    }));
 
     public getGardenPlots(): GardenPlot[] {
         return this.gardenPlots;
@@ -190,6 +189,21 @@ class GameStateManager {
     completedQuestIds: string[] = [];
     completedObjectives: string[] = []; // Format: "questId:objectiveIndex"
 
+    // ============================================================================
+    // CURRENT MAP
+    // ============================================================================
+
+    /** Tracks which map the player is currently on (for save/load) */
+    private currentMap: string = 'house';
+
+    getCurrentMap(): string {
+        return this.currentMap;
+    }
+
+    setCurrentMap(map: string): void {
+        this.currentMap = map;
+    }
+
     startQuest(id: string): void {
         if (this.completedQuestIds.includes(id)) return;
 
@@ -253,8 +267,13 @@ class GameStateManager {
         this.activeQuestId = 'q1_start';
         this.completedQuestIds = [];
         this.completedObjectives = [];
-        this.gardenPlots = this.gardenPlots.map((p, i) => ({
-            index: i, plantId: null, growthStage: 'empty', growthProgress: 0, waterLevel: 0, isWithered: false
+        this.currentMap = 'house';
+        this.gardenPlots = Array.from({ length: 12 }, (_, i) => ({
+            index: i,
+            isUnlocked: true,
+            plantId: null,
+            currentStage: 0,
+            currentGrowthPoints: 0
         }));
         this.giveStarterItems();
         console.log('🔄 Game state reset');
@@ -273,6 +292,7 @@ class GameStateManager {
             activeQuestId: this.activeQuestId,
             completedQuestIds: this.completedQuestIds,
             completedObjectives: this.completedObjectives,
+            currentMap: this.currentMap,
             gardenPlots: this.gardenPlots
         };
     }
@@ -289,6 +309,7 @@ class GameStateManager {
         activeQuestId?: string | null;
         completedQuestIds?: string[];
         completedObjectives?: string[];
+        currentMap?: string;
         gardenPlots?: GardenPlot[];
     }): void {
         if (data.collectedMemories) {
@@ -316,6 +337,9 @@ class GameStateManager {
         }
         if (data.completedObjectives) {
             this.completedObjectives = data.completedObjectives;
+        }
+        if (data.currentMap) {
+            this.currentMap = data.currentMap;
         }
         if (data.gardenPlots) {
             this.gardenPlots = data.gardenPlots;

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { Follower } from '../entities/Follower';
+import { BaristaNPC } from '../entities/BaristaNPC';
 import { DialogueBox } from '../ui/DialogueBox';
 import { Direction, TILE_SIZE, DIRECTION_VECTORS } from '../config/GameConfig';
 import { getRandomDateQuestions, DateQuestion } from '../data/Dialogues';
@@ -11,7 +12,7 @@ export class CafeScene extends Phaser.Scene {
     private partner!: Follower;
     private dialogueBox!: DialogueBox;
     private background!: Phaser.GameObjects.Image;
-    private barista!: Phaser.GameObjects.Sprite;
+    private barista!: BaristaNPC;
 
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private wasdKeys!: any;
@@ -23,6 +24,7 @@ export class CafeScene extends Phaser.Scene {
     private canTriggerExit = false;
 
     // Map dimensions (set from background image)
+    private readonly MAP_SCALE = 0.5;
     private mapWidth = 1024;
     private mapHeight = 1024;
 
@@ -58,10 +60,11 @@ export class CafeScene extends Phaser.Scene {
         // Background
         this.background = this.add.image(0, 0, 'cafe_interior_bg');
         this.background.setOrigin(0, 0);
+        this.background.setScale(this.MAP_SCALE);
         this.background.setDepth(-1);
 
-        this.mapWidth = this.background.width;
-        this.mapHeight = this.background.height;
+        this.mapWidth = this.background.width * this.MAP_SCALE;
+        this.mapHeight = this.background.height * this.MAP_SCALE;
 
         // Physics bounds
         this.physics.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
@@ -70,14 +73,19 @@ export class CafeScene extends Phaser.Scene {
         this.parseCollisionObjects();
 
         // Player & Partner (Starts near entrance)
-        const startTileX = Math.floor(505 / TILE_SIZE);
-        const startTileY = Math.floor(850 / TILE_SIZE);
+        // Original: (505, 850) -> Scaled
+        const startTileX = Math.floor((505 * this.MAP_SCALE) / TILE_SIZE);
+        const startTileY = Math.floor((850 * this.MAP_SCALE) / TILE_SIZE);
         this.player = new Player(this, startTileX, startTileY);
         this.partner = new Follower(this, startTileX, startTileY + 1, 'partner');
 
         // Barista NPC (positioned based on map layout)
-        this.barista = this.physics.add.sprite(200, 400, 'npc');
-        this.barista.setTint(0x996633); // Brown tint for barista look
+        // Original: (200, 400) -> Scaled to Tiles
+        const baristaTileX = Math.floor((200 * this.MAP_SCALE) / TILE_SIZE);
+        const baristaTileY = Math.floor((400 * this.MAP_SCALE) / TILE_SIZE);
+
+        this.barista = new BaristaNPC(this, baristaTileX, baristaTileY);
+        // Note: NPC class manages sprite creation and depth
 
         // Dialogue UI
         this.dialogueBox = new DialogueBox(this);
@@ -91,7 +99,7 @@ export class CafeScene extends Phaser.Scene {
         this.setupInput();
 
         // Add "Barista" label
-        this.add.text(200, 360, 'Barista', {
+        this.add.text(200 * this.MAP_SCALE, 360 * this.MAP_SCALE, 'Barista', {
             fontSize: '10px',
             color: '#ffffff',
             backgroundColor: '#000000'
@@ -104,45 +112,43 @@ export class CafeScene extends Phaser.Scene {
     private parseCollisionObjects(): void {
         this.collisionBodies = this.physics.add.staticGroup();
 
-        const map = this.make.tilemap({ key: 'cafe_interior_map' });
+        const map = this.make.tilemap({ key: 'cafe_Interior' });
 
         if (!map) {
-            console.error('❌ Failed to create tilemap from key "cafe_interior_map"');
+            console.error('❌ Failed to create tilemap from key \"cafe_Interior\"');
             return;
         }
 
-        const objectLayer = map.getObjectLayer('Collisions');
-
-        if (!objectLayer) {
-            console.error('❌ Layer "Collisions" not found in cafe_interior_map');
+        // Parse ALL object layers (Collisions, Zones, etc.)
+        if (!map.objects || map.objects.length === 0) {
+            console.error('❌ No object layers found in cafe_Interior tilemap!');
             return;
         }
 
-        console.log(`✅ Found "Collisions" layer with ${objectLayer.objects.length} objects`);
+        for (const objectLayer of map.objects) {
+            console.log(`📋 Parsing object layer "${objectLayer.name}" with ${objectLayer.objects.length} objects`);
 
-        objectLayer.objects.forEach((obj: any) => {
-            const name = obj.name || '';
-            const x = obj.x;
-            const y = obj.y;
-            const width = obj.width;
-            const height = obj.height;
+            objectLayer.objects.forEach((obj: any) => {
+                const name = obj.name || '';
+                const x = obj.x * this.MAP_SCALE;
+                const y = obj.y * this.MAP_SCALE;
+                const width = obj.width * this.MAP_SCALE;
+                const height = obj.height * this.MAP_SCALE;
 
-            if (name === 'date_table') {
-                // Date table zone for mini-game
-                this.tableZone = this.add.zone(x + width / 2, y + height / 2, width, height);
-                console.log(`🍽️ Created date_table zone at (${x}, ${y})`);
-            } else if (name === 'EnterZone') {
-                // Exit zone (back to city)
-                this.exitZone = this.add.zone(x + width / 2, y + height / 2, width, height);
-                console.log(`🚪 Created exit zone at (${x}, ${y})`);
-            } else if (name !== '') {
-                // Other named objects
-                console.log(`📦 Found named object: ${name} at (${x}, ${y})`);
-            } else {
-                // Create wall collision body
-                this.createCollisionBody(x, y, width, height);
-            }
-        });
+                if (name === 'date_table') {
+                    // Date table zone for mini-game
+                    this.tableZone = this.add.zone(x + width / 2, y + height / 2, width, height);
+                    console.log(`🍽️ Created date_table zone at (${x}, ${y})`);
+                } else if (name === 'EnterZone') {
+                    // Exit zone (back to city)
+                    this.exitZone = this.add.zone(x + width / 2, y + height / 2, width, height);
+                    console.log(`🚪 Created exit zone at (${x}, ${y})`);
+                } else if (width > 0 && height > 0 && name === '') {
+                    // Create wall collision body (unnamed objects only)
+                    this.createCollisionBody(x, y, width, height);
+                }
+            });
+        }
     }
 
     /**
@@ -271,14 +277,11 @@ export class CafeScene extends Phaser.Scene {
 
         const playerBounds = this.player.sprite.getBounds();
 
+
         // Talk to Barista
-        if (Phaser.Math.Distance.Between(this.player.sprite.x, this.player.sprite.y, this.barista.x, this.barista.y) < 60) {
-            this.isInDialogue = true;
-            this.dialogueBox.show('Barista', [
-                "Welcome to Pixel Brew!",
-                "We serve the finest digital beans.",
-                "Take a seat with your partner to relax! ☕"
-            ], () => this.isInDialogue = false);
+        const baristaSprite = this.barista.sprite;
+        if (Phaser.Math.Distance.Between(this.player.sprite.x, this.player.sprite.y, baristaSprite.x, baristaSprite.y) < 60 * this.MAP_SCALE) {
+            this.barista.interact(this.dialogueBox);
             return;
         }
 
@@ -312,6 +315,18 @@ export class CafeScene extends Phaser.Scene {
         this.currentScore = 0;
         this.currentQuestionIndex = 0;
         this.dateQuestions = getRandomDateQuestions(3); // 3 Rounds
+
+        // Position characters at the table
+        if (this.tableZone) {
+            const tableTileX = Math.floor(this.tableZone.x / TILE_SIZE);
+            const tableTileY = Math.floor(this.tableZone.y / TILE_SIZE);
+
+            // Player on LEFT, facing RIGHT
+            this.player.teleport(tableTileX - 1, tableTileY, Direction.RIGHT);
+
+            // Partner on RIGHT, facing LEFT
+            this.partner.teleport(tableTileX + 1, tableTileY, Direction.LEFT);
+        }
 
         this.dialogueBox.show('Date Time', [
             "Benvenuti al vostro appuntamento!",
@@ -384,11 +399,15 @@ export class CafeScene extends Phaser.Scene {
                 effectColor & 0xFF
             );
 
+            // Move player slightly away so they don't instantly re-trigger
+            // Move 1 tile down
+            this.player.teleport(this.player.tileX, this.player.tileY + 1, Direction.DOWN);
+
+            // Partner follows (teleport behind)
+            this.partner.teleportBehindPlayer(this.player.tileX, this.player.tileY, Direction.DOWN);
+
             // Reset everything
             this.isInDialogue = false;
-
-            // Move player slightly away so they don't instantly re-trigger
-            this.player.sprite.y += 20;
         });
     }
 

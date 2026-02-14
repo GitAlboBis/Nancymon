@@ -1,360 +1,376 @@
-{ "compressionlevel":-1,
- "height":55,
- "infinite":false,
- "layers":[
-        {
-         "id":2,
-         "image":"..\/..\/..\/Documents\/house.png",
-         "imageheight":1792,
-         "imagewidth":2400,
-         "name":"house",
-         "offsetx":0,
-         "offsety":-12,
-         "opacity":1,
-         "type":"imagelayer",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "draworder":"topdown",
-         "id":3,
-         "name":"Collisions",
-         "objects":[
-                {
-                 "height":0,
-                 "id":1,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":488,
-                 "y":1344
-                }, 
-                {
-                 "height":84,
-                 "id":2,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":520,
-                 "x":-12,
-                 "y":1260
-                }, 
-                {
-                 "height":1340,
-                 "id":3,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":224,
-                 "x":-4,
-                 "y":-12
-                }, 
-                {
-                 "height":96,
-                 "id":4,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":696,
-                 "x":668,
-                 "y":1244
-                }, 
-                {
-                 "height":740,
-                 "id":5,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":64,
-                 "x":1308,
-                 "y":584
-                }, 
-                {
-                 "height":288,
-                 "id":6,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":1672,
-                 "x":-24,
-                 "y":1504
-                }, 
-                {
-                 "height":1416,
-                 "id":7,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":144,
-                 "x":2256,
-                 "y":356
-                }, 
-                {
-                 "height":792,
-                 "id":8,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":104,
-                 "x":2124,
-                 "y":980
-                }, 
-                {
-                 "height":624,
-                 "id":9,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":84,
-                 "x":2040,
-                 "y":1144
-                }, 
-                {
-                 "height":0,
-                 "id":10,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":1900,
-                 "y":708
-                }, 
-                {
-                 "height":444,
-                 "id":11,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":180,
-                 "x":1728,
-                 "y":364
-                }, 
-                {
-                 "height":464,
-                 "id":12,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":108,
-                 "x":1480,
-                 "y":336
-                }, 
-                {
-                 "height":252,
-                 "id":13,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":120,
-                 "x":1604,
-                 "y":356
-                }, 
-                {
-                 "height":88,
-                 "id":14,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":40,
-                 "x":1956,
-                 "y":708
-                }, 
-                {
-                 "height":208,
-                 "id":15,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":1276,
-                 "x":1112,
-                 "y":-28
-                }, 
-                {
-                 "height":560,
-                 "id":16,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":200,
-                 "x":628,
-                 "y":384
-                }, 
-                {
-                 "height":472,
-                 "id":17,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":240,
-                 "x":256,
-                 "y":460
-                }, 
-                {
-                 "height":512,
-                 "id":18,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":116,
-                 "x":488,
-                 "y":240
-                }, 
-                {
-                 "height":468,
-                 "id":19,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":260,
-                 "x":224,
-                 "y":-16
-                }, 
-                {
-                 "height":320,
-                 "id":20,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":488,
-                 "x":808,
-                 "y":348
-                }],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "draworder":"topdown",
-         "id":4,
-         "name":"Zones",
-         "objects":[
-                {
-                 "height":252,
-                 "id":21,
-                 "name":"ExitZone",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":412,
-                 "x":1680,
-                 "y":1520
-                }, 
-                {
-                 "height":140,
-                 "id":22,
-                 "name":"ExitZone",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":208,
-                 "x":-12,
-                 "y":1356
-                }, 
-                {
-                 "height":172,
-                 "id":23,
-                 "name":"ExitZone",
-                 "properties":[
-                        {
-                         "name":"targetConnID",
-                         "type":"string",
-                         "value":"room_south_entrance"
-                        }, 
-                        {
-                         "name":"targetMap",
-                         "type":"string",
-                         "value":"room"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":116,
-                 "x":516,
-                 "y":772
-                }, 
-                {
-                 "height":170,
-                 "id":24,
-                 "name":"ExitZone",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":106,
-                 "x":1598,
-                 "y":636
-                }, 
-                {
-                 "height":228,
-                 "id":25,
-                 "name":"ExitZone",
-                 "properties":[
-                        {
-                         "name":"targetConnID",
-                         "type":"string",
-                         "value":"cafecity_south_entrance"
-                        }, 
-                        {
-                         "name":"targetMap",
-                         "type":"string",
-                         "value":"cafecity"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":198,
-                 "x":778,
-                 "y":-20
-                }, 
-                {
-                 "height":500,
-                 "id":26,
-                 "name":"Garden",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":362,
-                 "x":924,
-                 "y":724
-                }],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }],
- "nextlayerid":5,
- "nextobjectid":27,
- "orientation":"orthogonal",
- "renderorder":"right-down",
- "tiledversion":"1.11.2",
- "tileheight":32,
- "tilesets":[],
- "tilewidth":32,
- "type":"map",
- "version":"1.10",
- "width":75
+{
+ "compressionlevel": -1,
+ "height": 55,
+ "infinite": false,
+ "layers": [
+  {
+   "id": 2,
+   "image": "house_bg.png",
+   "imageheight": 896,
+   "imagewidth": 1200,
+   "name": "house",
+   "offsetx": 0,
+   "offsety": -6,
+   "opacity": 1,
+   "type": "imagelayer",
+   "visible": true,
+   "x": 0,
+   "y": 0
+  },
+  {
+   "draworder": "topdown",
+   "id": 3,
+   "name": "Collisions",
+   "objects": [
+    {
+     "height": 0,
+     "id": 1,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 0,
+     "x": 244,
+     "y": 672
+    },
+    {
+     "height": 42,
+     "id": 2,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 260,
+     "x": -6,
+     "y": 630
+    },
+    {
+     "height": 670,
+     "id": 3,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 112,
+     "x": -2,
+     "y": -6
+    },
+    {
+     "height": 48,
+     "id": 4,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 348,
+     "x": 334,
+     "y": 622
+    },
+    {
+     "height": 370,
+     "id": 5,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 32,
+     "x": 654,
+     "y": 292
+    },
+    {
+     "height": 144,
+     "id": 6,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 836,
+     "x": -12,
+     "y": 752
+    },
+    {
+     "height": 708,
+     "id": 7,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 72,
+     "x": 1128,
+     "y": 178
+    },
+    {
+     "height": 396,
+     "id": 8,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 52,
+     "x": 1062,
+     "y": 490
+    },
+    {
+     "height": 312,
+     "id": 9,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 42,
+     "x": 1020,
+     "y": 572
+    },
+    {
+     "height": 0,
+     "id": 10,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 0,
+     "x": 950,
+     "y": 354
+    },
+    {
+     "height": 222,
+     "id": 11,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 90,
+     "x": 864,
+     "y": 182
+    },
+    {
+     "height": 232,
+     "id": 12,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 54,
+     "x": 740,
+     "y": 168
+    },
+    {
+     "height": 126,
+     "id": 13,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 60,
+     "x": 802,
+     "y": 178
+    },
+    {
+     "height": 44,
+     "id": 14,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 20,
+     "x": 978,
+     "y": 354
+    },
+    {
+     "height": 104,
+     "id": 15,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 638,
+     "x": 556,
+     "y": -14
+    },
+    {
+     "height": 280,
+     "id": 16,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 100,
+     "x": 314,
+     "y": 192
+    },
+    {
+     "height": 236,
+     "id": 17,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 120,
+     "x": 128,
+     "y": 230
+    },
+    {
+     "height": 256,
+     "id": 18,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 58,
+     "x": 244,
+     "y": 120
+    },
+    {
+     "height": 234,
+     "id": 19,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 130,
+     "x": 112,
+     "y": -8
+    },
+    {
+     "height": 160,
+     "id": 20,
+     "name": "",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 244,
+     "x": 404,
+     "y": 174
+    }
+   ],
+   "opacity": 1,
+   "type": "objectgroup",
+   "visible": true,
+   "x": 0,
+   "y": 0
+  },
+  {
+   "draworder": "topdown",
+   "id": 4,
+   "name": "Zones",
+   "objects": [
+    {
+     "height": 126,
+     "id": 21,
+     "name": "ExitZone",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 206,
+     "x": 840,
+     "y": 760
+    },
+    {
+     "height": 70,
+     "id": 22,
+     "name": "ExitZone",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 104,
+     "x": -6,
+     "y": 678
+    },
+    {
+     "height": 86,
+     "id": 23,
+     "name": "ExitZone",
+     "properties": [
+      {
+       "name": "connID",
+       "type": "string",
+       "value": "door_entrance"
+      },
+      {
+       "name": "targetConnID",
+       "type": "string",
+       "value": "room_south_entrance"
+      },
+      {
+       "name": "targetMap",
+       "type": "string",
+       "value": "room"
+      }
+     ],
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 58,
+     "x": 258,
+     "y": 386
+    },
+    {
+     "height": 85,
+     "id": 24,
+     "name": "ExitZone",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 53,
+     "x": 799,
+     "y": 318
+    },
+    {
+     "height": 114,
+     "id": 25,
+     "name": "ExitZone",
+     "properties": [
+      {
+       "name": "connID",
+       "type": "string",
+       "value": "house_north_entrance"
+      },
+      {
+       "name": "targetConnID",
+       "type": "string",
+       "value": "cafecity_south_entrance"
+      },
+      {
+       "name": "targetMap",
+       "type": "string",
+       "value": "cafecity"
+      }
+     ],
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 99,
+     "x": 389,
+     "y": -10
+    },
+    {
+     "height": 250,
+     "id": 26,
+     "name": "Garden",
+     "rotation": 0,
+     "type": "",
+     "visible": true,
+     "width": 181,
+     "x": 462,
+     "y": 362
+    }
+   ],
+   "opacity": 1,
+   "type": "objectgroup",
+   "visible": true,
+   "x": 0,
+   "y": 0
+  }
+ ],
+ "nextlayerid": 5,
+ "nextobjectid": 27,
+ "orientation": "orthogonal",
+ "renderorder": "right-down",
+ "tiledversion": "1.11.2",
+ "tileheight": 32,
+ "tilesets": [],
+ "tilewidth": 32,
+ "type": "map",
+ "version": "1.10",
+ "width": 75
 }

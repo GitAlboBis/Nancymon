@@ -75,89 +75,6 @@
                  "y":227
                 }, 
                 {
-                 "height":197,
-                 "id":7,
-                 "name":"ExitZone",
-                 "properties":[
-                        {
-                         "name":"targetConnID",
-                         "type":"string",
-                         "value":"forest_right_entrance"
-                        }, 
-                        {
-                         "name":"targetMap",
-                         "type":"string",
-                         "value":"forest"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":73,
-                 "x":-27,
-                 "y":599
-                }, 
-                {
-                 "height":152,
-                 "id":8,
-                 "name":"ExitZone",
-                 "properties":[
-                        {
-                         "name":"targetConnID",
-                         "type":"string",
-                         "value":"route2_left_entrance"
-                        }, 
-                        {
-                         "name":"targetMap",
-                         "type":"string",
-                         "value":"route2"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":98,
-                 "x":995,
-                 "y":643
-                }, 
-                {
-                 "height":83,
-                 "id":9,
-                 "name":"EnterZone",
-                 "properties":[
-                        {
-                         "name":"connID",
-                         "type":"string",
-                         "value":"cafecity_south_entrance"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":102,
-                 "x":458,
-                 "y":952
-                }, 
-                {
-                 "height":56,
-                 "id":11,
-                 "name":"ExitZone",
-                 "properties":[
-                        {
-                         "name":"targetConnID",
-                         "type":"string",
-                         "value":"cafe_south_entrance"
-                        }, 
-                        {
-                         "name":"targetMap",
-                         "type":"string",
-                         "value":"cafe-interior"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":61,
-                 "x":175,
-                 "y":588
-                }, 
-                {
                  "height":248.833146696529,
                  "id":13,
                  "name":"",
@@ -288,12 +205,131 @@
                  "width":69.9484882418814,
                  "x":973.545352743561,
                  "y":229.339305711086
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":4,
+         "name":"Zones",
+         "objects":[
+                {
+                 "height":197,
+                 "id":7,
+                 "name":"ExitZone",
+                 "properties":[
+                        {
+                         "name":"connID",
+                         "type":"string",
+                         "value":"cafecity_left_entrance"
+                        }, 
+                        {
+                         "name":"targetConnID",
+                         "type":"string",
+                         "value":"forest_right_entrance"
+                        }, 
+                        {
+                         "name":"targetMap",
+                         "type":"string",
+                         "value":"forest"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":73,
+                 "x":-27,
+                 "y":599
+                }, 
+                {
+                 "height":56,
+                 "id":11,
+                 "name":"ExitZone",
+                 "properties":[
+                        {
+                         "name":"targetConnID",
+                         "type":"string",
+                         "value":"cafe_south_entrance"
+                        }, 
+                        {
+                         "name":"targetMap",
+                         "type":"string",
+                         "value":"cafe-interior"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":61,
+                 "x":175,
+                 "y":588
+                }, 
+                {
+                 "height":83,
+                 "id":9,
+                 "name":"EnterZone",
+                 "properties":[
+                        {
+                         "name":"connID",
+                         "type":"string",
+                         "value":"cafecity_south_entrance"
+                        }, 
+                        {
+                         "name":"targetConnID",
+                         "type":"string",
+                         "value":"house_north_entrance"
+                        }, 
+                        {
+                         "name":"targetMap",
+                         "type":"string",
+                         "value":"house"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":102,
+                 "x":458,
+                 "y":952
+                }, 
+                {
+                 "height":152,
+                 "id":8,
+                 "name":"ExitZone",
+                 "properties":[
+                        {
+                         "name":"connID",
+                         "type":"string",
+                         "value":"cafecity_right_entrance"
+                        }, 
+                        {
+                         "name":"targetConnID",
+                         "type":"string",
+                         "value":"route2_left_entrance"
+                        }, 
+                        {
+                         "name":"targetMap",
+                         "type":"string",
+                         "value":"route2"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":98,
+                 "x":957.074074074074,
+                 "y":643
                 }, 
                 {
                  "height":189.204927211646,
                  "id":25,
                  "name":"ExitZone",
                  "properties":[
+                        {
+                         "name":"connID",
+                         "type":"string",
+                         "value":"cafecity_north_entrance"
+                        }, 
                         {
                          "name":"targetConnID",
                          "type":"string",
@@ -317,7 +353,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":4,
+ "nextlayerid":5,
  "nextobjectid":27,
  "orientation":"orthogonal",
  "renderorder":"right-down",

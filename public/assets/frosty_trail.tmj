@@ -4,7 +4,7 @@
  "layers":[
         {
          "id":2,
-         "image":"frosty_trail-bg.png",
+         "image":"frosty_trail_bg.png",
          "imageheight":1024,
          "imagewidth":1024,
          "name":"frost",
@@ -128,6 +128,44 @@
                  "width":682.666666666667,
                  "x":-76,
                  "y":-9.33333333333334
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":4,
+         "name":"Zones",
+         "objects":[
+                {
+                 "height":114.666666666667,
+                 "id":12,
+                 "name":"EnterZone",
+                 "properties":[
+                        {
+                         "name":"connID",
+                         "type":"string",
+                         "value":"frosty_south_entrance"
+                        }, 
+                        {
+                         "name":"targetConnID",
+                         "type":"string",
+                         "value":"cafecity_north_entrance"
+                        }, 
+                        {
+                         "name":"targetMap",
+                         "type":"string",
+                         "value":"cafecity"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":110.666666666667,
+                 "x":216,
+                 "y":921.333333333333
                 }, 
                 {
                  "height":88,
@@ -145,23 +183,6 @@
                  "width":144,
                  "x":-5.33333333333333,
                  "y":181.333333333333
-                }, 
-                {
-                 "height":114.666666666667,
-                 "id":12,
-                 "name":"EnterZone",
-                 "properties":[
-                        {
-                         "name":"connID",
-                         "type":"string",
-                         "value":"frosty_south_entrance"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":110.666666666667,
-                 "x":216,
-                 "y":921.333333333333
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -169,7 +190,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":4,
+ "nextlayerid":5,
  "nextobjectid":13,
  "orientation":"orthogonal",
  "renderorder":"right-down",

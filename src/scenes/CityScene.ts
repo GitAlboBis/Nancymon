@@ -129,51 +129,56 @@ export class CityScene extends Phaser.Scene {
     private parseCollisionObjects(): void {
         this.collisionBodies = this.physics.add.staticGroup();
 
-        const map = this.make.tilemap({ key: 'cafecity_map' });
+        const map = this.make.tilemap({ key: 'cafecity' });
 
         if (!map) {
-            console.error('❌ Failed to create tilemap from key "cafecity_map"');
+            console.error('❌ Failed to create tilemap from key "cafecity"');
             return;
         }
 
-        const objectLayer = map.getObjectLayer('Collisions');
-
-        if (!objectLayer) {
-            console.error('❌ Layer "Collisions" not found in cafecity_map');
+        // Parse ALL object layers (Collisions, Zones, etc.)
+        if (!map.objects || map.objects.length === 0) {
+            console.error('❌ No object layers found in cafecity tilemap!');
             return;
         }
 
-        console.log(`✅ Found "Collisions" layer with ${objectLayer.objects.length} objects`);
+        for (const objectLayer of map.objects) {
+            console.log(`📋 Parsing object layer "${objectLayer.name}" with ${objectLayer.objects.length} objects`);
 
-        objectLayer.objects.forEach((obj: any) => {
-            const name = obj.name || '';
-            const x = obj.x;
-            const y = obj.y;
-            const width = obj.width;
-            const height = obj.height;
+            objectLayer.objects.forEach((obj: any) => {
+                const name = obj.name || '';
+                const x = obj.x;
+                const y = obj.y;
+                const width = obj.width;
+                const height = obj.height;
 
-            if (name === 'ExitZone') {
-                const properties = obj.properties as Array<{ name: string; value: any }> | undefined;
-                const targetMap = properties?.find(p => p.name === 'targetMap')?.value;
-                const targetConnID = properties?.find(p => p.name === 'targetConnID')?.value;
+                if (name === 'ExitZone') {
+                    const properties = obj.properties as Array<{ name: string; value: any }> | undefined;
+                    const targetMap = properties?.find(p => p.name === 'targetMap')?.value;
+                    const targetConnID = properties?.find(p => p.name === 'targetConnID')?.value;
 
-                // Check if this is the cafe entrance (no targetMap means it goes to CafeScene)
-                if (targetMap === 'cafe-interior') {
-                    this.createExitZone(x, y, width, height, undefined, targetConnID, 'CafeScene');
-                } else if (targetMap) {
-                    this.createExitZone(x, y, width, height, targetMap, targetConnID);
-                } else {
-                    // Legacy exit zone without target
-                    this.createExitZone(x, y, width, height);
+                    // Check if this is the cafe entrance
+                    if (targetMap === 'cafe-interior') {
+                        this.createExitZone(x, y, width, height, undefined, targetConnID, 'CafeScene');
+                    } else if (targetMap) {
+                        this.createExitZone(x, y, width, height, targetMap, targetConnID);
+                    } else {
+                        this.createExitZone(x, y, width, height);
+                    }
+                } else if (name === 'EnterZone') {
+                    const properties = obj.properties as Array<{ name: string; value: any }> | undefined;
+                    const targetMap = properties?.find(p => p.name === 'targetMap')?.value;
+                    const targetConnID = properties?.find(p => p.name === 'targetConnID')?.value;
+
+                    if (targetMap) {
+                        this.createExitZone(x, y, width, height, targetMap, targetConnID);
+                    }
+                } else if (width > 0 && height > 0 && name === '') {
+                    // Create wall collision body (unnamed objects only)
+                    this.createCollisionBody(x, y, width, height);
                 }
-            } else if (name !== '') {
-                // Named object but not ExitZone - could be interactable
-                console.log(`📦 Found named object: ${name} at (${x}, ${y})`);
-            } else {
-                // Create wall collision body
-                this.createCollisionBody(x, y, width, height);
-            }
-        });
+            });
+        }
     }
 
     /**

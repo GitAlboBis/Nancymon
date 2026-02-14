@@ -156,7 +156,7 @@ export class BattleScene extends Phaser.Scene {
 
     private createBackground(width: number, height: number): void {
         // Use battle background image instead of gradient
-        const bg = this.add.image(0, 0, 'battle-bg');
+        const bg = this.add.image(0, 0, 'battle_bg');
         bg.setOrigin(0, 0);
         bg.setDisplaySize(width, height);
         bg.setDepth(-100); // Ensure it's at the bottom
@@ -620,7 +620,6 @@ export class BattleScene extends Phaser.Scene {
             this.updateMenuSelection();
         } else if (this.state === BattleState.PLAYER_SELECTING_MOVE) {
             const moveCount = this.playerMemory.moves.length;
-            this.currentMoveIndex = (this.currentMoveIndex + direction + moveCount) % moveCount;
             this.currentMoveIndex = (this.currentMoveIndex + direction + moveCount) % moveCount;
             this.updateMoveSelection();
         } else if (this.state === BattleState.PLAYER_SELECTING_ITEM) {

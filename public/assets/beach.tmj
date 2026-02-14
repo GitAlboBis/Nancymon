@@ -4,7 +4,7 @@
  "layers":[
         {
          "id":2,
-         "image":"sunset_beach.png",
+         "image":"beach_bg.png",
          "imageheight":1024,
          "imagewidth":1024,
          "name":"sunsetbeach",
@@ -73,7 +73,18 @@
                  "width":1054.66666666667,
                  "x":-9.33333333333333,
                  "y":-10.6666666666667
-                }, 
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":4,
+         "name":"Zones",
+         "objects":[
                 {
                  "height":184,
                  "id":6,
@@ -100,6 +111,16 @@
                          "name":"connID",
                          "type":"string",
                          "value":"beach_right_entrance"
+                        }, 
+                        {
+                         "name":"targetConnID",
+                         "type":"string",
+                         "value":"forest_left_entrance"
+                        }, 
+                        {
+                         "name":"targetMap",
+                         "type":"string",
+                         "value":"forest"
                         }],
                  "rotation":0,
                  "type":"",
@@ -114,7 +135,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":4,
+ "nextlayerid":5,
  "nextobjectid":8,
  "orientation":"orthogonal",
  "renderorder":"right-down",

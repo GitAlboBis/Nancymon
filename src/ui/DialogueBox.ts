@@ -33,16 +33,30 @@ export class DialogueBox {
 
     public isVisible: boolean = false;
 
+    // Input listeners
+    private keyUp?: Phaser.Input.Keyboard.Key;
+    private keyDown?: Phaser.Input.Keyboard.Key;
+    private keyEnter?: Phaser.Input.Keyboard.Key;
+    private keySpace?: Phaser.Input.Keyboard.Key;
+
     constructor(scene: Phaser.Scene) {
         this.scene = scene;
 
-        const { width, height } = scene.cameras.main;
+        // Get current camera zoom
+        const zoom = scene.cameras.main.zoom;
+        const inverseZoom = 1 / zoom;
+
+        // Calculate effective viewport size
+        const width = scene.cameras.main.width * inverseZoom;
+        const height = scene.cameras.main.height * inverseZoom;
+
         const boxY = height - this.BOX_HEIGHT - 10;
 
         // Create container
         this.container = scene.add.container(0, boxY);
         this.container.setScrollFactor(0);
         this.container.setDepth(2000);
+        this.container.setScale(inverseZoom); // Counter-scale to keep UI constant size
 
         // Background
         this.background = scene.add.graphics();
@@ -95,16 +109,24 @@ export class DialogueBox {
         this.optionsContainer = scene.add.container(0, boxY - 10); // Start slightly above
         this.optionsContainer.setScrollFactor(0);
         this.optionsContainer.setDepth(2001);
+        this.optionsContainer.setScale(inverseZoom); // Counter-scale options too
         this.optionsContainer.setVisible(false);
 
         // Initially hidden
         this.container.setVisible(false);
 
-        // Bind input for options
-        this.scene.input.keyboard!.on('keydown-UP', () => this.navigateOptions(-1));
-        this.scene.input.keyboard!.on('keydown-DOWN', () => this.navigateOptions(1));
-        this.scene.input.keyboard!.on('keydown-ENTER', () => this.selectOption());
-        this.scene.input.keyboard!.on('keydown-SPACE', () => this.selectOption());
+        // Bind input for options using Key objects for easier cleanup
+        if (this.scene.input.keyboard) {
+            this.keyUp = this.scene.input.keyboard.addKey('UP');
+            this.keyDown = this.scene.input.keyboard.addKey('DOWN');
+            this.keyEnter = this.scene.input.keyboard.addKey('ENTER');
+            this.keySpace = this.scene.input.keyboard.addKey('SPACE');
+
+            this.keyUp.on('down', () => this.navigateOptions(-1));
+            this.keyDown.on('down', () => this.navigateOptions(1));
+            this.keyEnter.on('down', () => this.selectOption());
+            this.keySpace.on('down', () => this.selectOption());
+        }
     }
 
     /**
@@ -118,6 +140,7 @@ export class DialogueBox {
         this.nameText.setText(speakerName);
         this.container.setVisible(true);
 
+        console.log(`💬 DialogueBox Show: Speaker="${speakerName}", Lines=${dialogue.length}`);
         this.showNextLine();
     }
 
@@ -134,6 +157,7 @@ export class DialogueBox {
         this.onOptionSelected = onSelect;
         this.isChoosing = true;
         this.createOptionUI(options);
+        console.log(`🤔 DialogueBox Options: ${JSON.stringify(options)}`);
     }
 
     private createOptionUI(options: string[]): void {
@@ -186,6 +210,8 @@ export class DialogueBox {
 
     private selectOption(): void {
         if (!this.isChoosing) return;
+
+        console.log(`✅ Option Selected: Index ${this.selectedOptionIndex}`);
 
         this.isChoosing = false;
         this.optionsContainer.setVisible(false);
@@ -244,6 +270,7 @@ export class DialogueBox {
         this.contentText.setText(this.currentText);
         this.isTyping = false;
         this.continueIndicator.setVisible(true);
+        console.log('⏩ Typewriter Skipped');
     }
 
     /**
@@ -264,6 +291,7 @@ export class DialogueBox {
         }
 
         if (this.dialogueQueue.length > 0) {
+            console.log('➡ DialogueBox Advance: Next Line');
             this.showNextLine();
             return true;
         }
@@ -282,11 +310,14 @@ export class DialogueBox {
         this.isVisible = false;
         this.isChoosing = false;
 
+        console.log('❌ DialogueBox Hiding');
+
         if (this.typewriterEvent) {
             this.typewriterEvent.destroy();
         }
 
         if (this.onComplete) {
+            console.log('🏁 DialogueBox Complete Callback Triggered');
             this.onComplete();
             this.onComplete = undefined;
         }
@@ -303,10 +334,16 @@ export class DialogueBox {
      * Destroys the dialogue box
      */
     public destroy(): void {
+        if (this.keyUp) this.keyUp.removeAllListeners();
+        if (this.keyDown) this.keyDown.removeAllListeners();
+        if (this.keyEnter) this.keyEnter.removeAllListeners();
+        if (this.keySpace) this.keySpace.removeAllListeners();
+
         if (this.typewriterEvent) {
             this.typewriterEvent.destroy();
         }
         this.container.destroy();
         this.optionsContainer.destroy();
+        console.log('🗑️ DialogueBox Destroyed');
     }
 }

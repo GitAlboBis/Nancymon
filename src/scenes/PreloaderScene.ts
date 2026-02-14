@@ -17,29 +17,37 @@ export class PreloaderScene extends Phaser.Scene {
         this.createLoadingBar();
         this.createPlaceholderAssets();
 
-        // Load map assets
+        // Title screen
         this.load.image('title-bg', '/assets/title-bg.png');
 
-        // Load map assets
-        this.load.image('background', '/assets/background.png');
-        this.load.image('battle-bg', '/assets/battle-bg.jpg');
-        this.load.image('forest-bg', '/assets/forest_bg.png');
+        // ===== STANDARDIZED MAP LOADING =====
+        // Convention: key=[name]_bg → /assets/[name]_bg.png
+        //             key=[name]   → /assets/[name].tmj
+
+        // Backgrounds (_bg images)
+        this.load.image('battle_bg', '/assets/battle_bg.jpg');
+        this.load.image('house_bg', '/assets/house_bg.png');
+        this.load.image('room_bg', '/assets/room_bg.png');
+        this.load.image('forest_bg', '/assets/forest_bg.png');
+        this.load.image('beach_bg', '/assets/beach_bg.png');
         this.load.image('route2_bg', '/assets/route2_bg.png');
-        this.load.image('city-background', '/assets/city-background.png');
-        this.load.image('cafe-interior', '/assets/cafe-interior.png');
-        this.load.image('mysterious_path_bg', '/assets/mysterious_path.png');
-
-        // Load map data (TMJ/JSON)
-        this.load.tilemapTiledJSON('map', '/assets/map.tmj');
-        this.load.tilemapTiledJSON('route2', '/assets/route2.tmj');
-        this.load.tilemapTiledJSON('secret_garden', '/assets/secret_garden.tmj');
-        this.load.tilemapTiledJSON('mysterious_path', '/assets/mysterious_path.tmj');
-        this.load.tilemapTiledJSON('cafecity_map', '/assets/cafecity.tmj');
-        this.load.tilemapTiledJSON('cafe_interior_map', '/assets/Cafe-Interior.tmj');
-
-        // Load city and cafe backgrounds
         this.load.image('cafecity_bg', '/assets/cafecity_bg.png');
         this.load.image('cafe_interior_bg', '/assets/cafe_interior_bg.png');
+        this.load.image('starry_bg', '/assets/starry_bg.png');
+        this.load.image('frosty_trail_bg', '/assets/frosty_trail_bg.png');
+        this.load.image('mysterious_path_bg', '/assets/mysterious_path_bg.png');
+
+        // Tiled JSON maps
+        this.load.tilemapTiledJSON('house', '/assets/house.tmj');
+        this.load.tilemapTiledJSON('room', '/assets/room.tmj');
+        this.load.tilemapTiledJSON('forest', '/assets/forest.tmj');
+        this.load.tilemapTiledJSON('beach', '/assets/beach.tmj');
+        this.load.tilemapTiledJSON('route2', '/assets/route2.tmj');
+        this.load.tilemapTiledJSON('cafecity', '/assets/cafecity.tmj');
+        this.load.tilemapTiledJSON('cafe_Interior', '/assets/cafe_Interior.tmj');
+        this.load.tilemapTiledJSON('starry', '/assets/starry.tmj');
+        this.load.tilemapTiledJSON('frosty_trail', '/assets/frosty_trail.tmj');
+        this.load.tilemapTiledJSON('mysterious_path', '/assets/mysterious_path.tmj');
 
 
         // Load player spritesheet (32x48 per frame, 16 frames total in 4x4 grid)
@@ -52,6 +60,20 @@ export class PreloaderScene extends Phaser.Scene {
         this.load.spritesheet('partner', '/assets/partner.png', {
             frameWidth: 32,
             frameHeight: 48
+        });
+
+        // Load barista spritesheet (standard 32x32 based on request, but checking file first is good practice - assuming user standard)
+        // User specified: "Assume the sprite sheet format is standard (32x32 or 16x16 frames)"
+        // I will assume 32x32 for now as that's typical for RPG Maker style or standard pixel art.
+        // If it was 32x48 like player/partner, I'd use that, but "Nancymon" assets might be different.
+        // Let's stick to the prompt's implication of standard square tiles or similar.
+        // Actually, looking at `partner.png` it is 32x48. I'll stick to 32x48 for characters to be safe, 
+        // OR I can try to load it and if it fails, I'll see. 
+        // Wait, the prompt said "Assume the sprite sheet format is standard (32x32 or 16x16 frames)".
+        // I will use 32x32 as requested/implied for "standard".
+        this.load.spritesheet('barista', '/assets/barista.png', {
+            frameWidth: 32,
+            frameHeight: 32
         });
 
         // Add error handler for failed loads

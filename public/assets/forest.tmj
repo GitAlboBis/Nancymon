@@ -86,23 +86,6 @@
                  "y":581.333333333333
                 }, 
                 {
-                 "height":177.333333333333,
-                 "id":8,
-                 "name":"EnterZone",
-                 "properties":[
-                        {
-                         "name":"connID",
-                         "type":"string",
-                         "value":"forest_right_entrance"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":101.333333333333,
-                 "x":930.666666666667,
-                 "y":400
-                }, 
-                {
                  "height":2.66666666666669,
                  "id":9,
                  "name":"",
@@ -112,12 +95,28 @@
                  "width":1.33333333333333,
                  "x":-8,
                  "y":453.333333333333
-                }, 
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":4,
+         "name":"Zones",
+         "objects":[
                 {
                  "height":205.333333333333,
                  "id":10,
                  "name":"ExitZone",
                  "properties":[
+                        {
+                         "name":"connID",
+                         "type":"string",
+                         "value":"forest_left_entrance"
+                        }, 
                         {
                          "name":"targetConnID",
                          "type":"string",
@@ -134,6 +133,33 @@
                  "width":130.666666666667,
                  "x":-26.6666666666667,
                  "y":393.333333333333
+                }, 
+                {
+                 "height":177.333333333333,
+                 "id":8,
+                 "name":"EnterZone",
+                 "properties":[
+                        {
+                         "name":"connID",
+                         "type":"string",
+                         "value":"forest_right_entrance"
+                        }, 
+                        {
+                         "name":"targetConnID",
+                         "type":"string",
+                         "value":"cafecity_left_entrance"
+                        }, 
+                        {
+                         "name":"targetMap",
+                         "type":"string",
+                         "value":"cafecity"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":101.333333333333,
+                 "x":930.666666666667,
+                 "y":400
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -141,7 +167,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":4,
+ "nextlayerid":5,
  "nextobjectid":11,
  "orientation":"orthogonal",
  "renderorder":"right-down",

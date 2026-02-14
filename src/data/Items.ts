@@ -106,6 +106,24 @@ export const ITEMS: Record<string, Item> = {
         type: 'resource',
         value: 10,
         emoji: '🫘'
+    },
+    // NEW ITEMS
+    seed_love_berry: {
+        id: 'seed_love_berry',
+        name: 'Love Berry Seed',
+        description: 'Plants a magical berry that grows with love.',
+        type: 'seed',
+        value: 0,
+        emoji: '🌰',
+        plantId: 'love_berry'
+    },
+    love_berry: {
+        id: 'love_berry',
+        name: 'Love Berry',
+        description: 'A sweet fruit that glows with affection.',
+        type: 'heal',
+        value: 50,
+        emoji: '🍓'
     }
 };
 

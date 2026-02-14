@@ -1,7 +1,6 @@
 
 import Phaser from 'phaser';
 import { GameState } from '../state/GameState';
-import { GAME_WIDTH, GAME_HEIGHT } from '../config/GameConfig';
 
 export class SystemMenuScene extends Phaser.Scene {
     private selectedOption: number = 0;
@@ -15,11 +14,25 @@ export class SystemMenuScene extends Phaser.Scene {
     create(): void {
         console.log('⚙️ System Menu Opened');
 
+        // Check window focus
+        if (!document.hasFocus()) {
+            console.warn('⚠️ Game window does not have focus - click to interact');
+            window.focus();
+        }
+
+        // Use actual camera dimensions for reliable centering
+        const { width, height } = this.cameras.main;
+
+        // Force enable input
+        if (this.input.keyboard) {
+            this.input.keyboard.enabled = true;
+        }
+
         // semi-transparent background
-        this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.7).setOrigin(0);
+        this.add.rectangle(0, 0, width, height, 0x000000, 0.7).setOrigin(0);
 
         // Container for menu items
-        this.container = this.add.container(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+        this.container = this.add.container(width / 2, height / 2);
 
         // Title
         const title = this.add.text(0, -100, 'PAUSED', {
@@ -48,7 +61,7 @@ export class SystemMenuScene extends Phaser.Scene {
         });
 
         // Current status msg
-        this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 50, 'Press ENTER/SPACE to select', {
+        this.add.text(width / 2, height - 50, 'Press ENTER/SPACE to select', {
             fontFamily: 'monospace', fontSize: '16px', color: '#888888'
         }).setOrigin(0.5);
 
@@ -106,8 +119,10 @@ export class SystemMenuScene extends Phaser.Scene {
     private saveGame(): void {
         GameState.saveGame();
 
+        const { width, height } = this.cameras.main;
+
         // Show feedback
-        const msg = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 100, 'GAME SAVED!', {
+        const msg = this.add.text(width / 2, height - 100, 'GAME SAVED!', {
             fontFamily: 'monospace', fontSize: '20px', color: '#00FF00', backgroundColor: '#000000'
         }).setOrigin(0.5);
 

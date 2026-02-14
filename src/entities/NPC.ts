@@ -29,7 +29,7 @@ export class NPC {
     public readonly name: string;
     public readonly dialogue: string[];
 
-    private scene: Phaser.Scene;
+    protected scene: Phaser.Scene;
     private behavior: 'stationary' | 'patrol' | 'random';
 
     constructor(scene: Phaser.Scene, config: NPCConfig) {

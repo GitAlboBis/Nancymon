@@ -4,7 +4,7 @@
  "layers":[
         {
          "id":2,
-         "image":"cafe-interior-bg.png",
+         "image":"cafe_interior_bg.png",
          "imageheight":1024,
          "imagewidth":1024,
          "name":"cafe-interior",
@@ -12,6 +12,45 @@
          "offsety":-8.17577925396006,
          "opacity":1,
          "type":"imagelayer",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":5,
+         "name":"Zones",
+         "objects":[
+                {
+                 "height":125,
+                 "id":36,
+                 "name":"date_table",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":67,
+                 "x":747,
+                 "y":819
+                }, 
+                {
+                 "height":119,
+                 "id":38,
+                 "name":"EnterZone",
+                 "properties":[
+                        {
+                         "name":"connID",
+                         "type":"string",
+                         "value":"cafe_south_entrance"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":124,
+                 "x":443,
+                 "y":894
+                }],
+         "opacity":1,
+         "type":"objectgroup",
          "visible":true,
          "x":0,
          "y":0
@@ -397,17 +436,6 @@
                  "y":809
                 }, 
                 {
-                 "height":125,
-                 "id":36,
-                 "name":"date_table",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":67,
-                 "x":747,
-                 "y":819
-                }, 
-                {
                  "height":128,
                  "id":37,
                  "name":"",
@@ -417,23 +445,6 @@
                  "width":61,
                  "x":825,
                  "y":817
-                }, 
-                {
-                 "height":119,
-                 "id":38,
-                 "name":"EnterZone",
-                 "properties":[
-                        {
-                         "name":"connID",
-                         "type":"string",
-                         "value":"cafe_south_entrance"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":124,
-                 "x":443,
-                 "y":894
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -441,7 +452,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":5,
+ "nextlayerid":6,
  "nextobjectid":39,
  "orientation":"orthogonal",
  "renderorder":"right-down",

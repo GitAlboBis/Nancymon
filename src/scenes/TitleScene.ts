@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { GameState } from '../state/GameState';
-import { GAME_WIDTH, GAME_HEIGHT } from '../config/GameConfig';
 
 export class TitleScene extends Phaser.Scene {
     private background!: Phaser.GameObjects.Image;
@@ -13,19 +12,26 @@ export class TitleScene extends Phaser.Scene {
     }
 
     create(): void {
+        // Enforce focus and input
+        if (this.input.keyboard) {
+            this.input.keyboard.enabled = true;
+        }
+
+        const { width, height } = this.cameras.main;
+
         // 1. Background
-        this.background = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'title-bg');
+        this.background = this.add.image(width / 2, height / 2, 'title-bg');
         // Scale background to cover screen while maintaining aspect ratio
-        const scaleX = GAME_WIDTH / this.background.width;
-        const scaleY = GAME_HEIGHT / this.background.height;
+        const scaleX = width / this.background.width;
+        const scaleY = height / this.background.height;
         const scale = Math.max(scaleX, scaleY);
         this.background.setScale(scale);
 
         // Dark overlay for text readability
-        this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.3).setOrigin(0, 0);
+        this.add.rectangle(0, 0, width, height, 0x000000, 0.3).setOrigin(0, 0);
 
         // 2. Logo / Title
-        this.add.text(GAME_WIDTH / 2, 120, 'NANCYMON', {
+        this.add.text(width / 2, 120, 'NANCYMON', {
             fontFamily: '"Press Start 2P", monospace',
             fontSize: '64px',
             color: '#FFD700', // Gold
@@ -35,7 +41,7 @@ export class TitleScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         // Add subtitle
-        this.add.text(GAME_WIDTH / 2, 180, 'A Romantic RPG Adventure', {
+        this.add.text(width / 2, 180, 'A Romantic RPG Adventure', {
             fontFamily: 'monospace',
             fontSize: '20px',
             color: '#FFFFFF',
@@ -49,13 +55,13 @@ export class TitleScene extends Phaser.Scene {
         const spacing = 50;
 
         // New Game
-        const newGameBtn = this.createButton(GAME_WIDTH / 2, yPos, 'New Game');
+        const newGameBtn = this.createButton(width / 2, yPos, 'New Game');
         this.options.push(newGameBtn);
         yPos += spacing;
 
         // Continue
         if (this.canContinue) {
-            const continueBtn = this.createButton(GAME_WIDTH / 2, yPos, 'Continue');
+            const continueBtn = this.createButton(width / 2, yPos, 'Continue');
             this.options.push(continueBtn);
             // If continue is available, make it default? No, stick to consistent order, but maybe highlight it?
             // Actually, let's keep New Game as 0. 
@@ -63,14 +69,14 @@ export class TitleScene extends Phaser.Scene {
             // Let's rebuilding options list logic.
         } else {
             // Create grayed out text for visual consistency or just hide it
-            this.add.text(GAME_WIDTH / 2, yPos, 'Continue', {
+            this.add.text(width / 2, yPos, 'Continue', {
                 fontFamily: 'monospace', fontSize: '24px', color: '#666666'
             }).setOrigin(0.5);
         }
         yPos += spacing;
 
         // Credits
-        const creditsBtn = this.createButton(GAME_WIDTH / 2, yPos, 'Credits');
+        const creditsBtn = this.createButton(width / 2, yPos, 'Credits');
         this.options.push(creditsBtn);
 
         // If continue was added, we need to re-sort or handle selection logic
@@ -85,7 +91,7 @@ export class TitleScene extends Phaser.Scene {
         if (this.canContinue) {
             // If we have continue, let's make it the SECOND option visually, but keep track of it
             // Actually, let's just push it to options array
-            const continueBtn = this.createButton(GAME_WIDTH / 2, 350 + spacing, 'Continue');
+            const continueBtn = this.createButton(width / 2, 350 + spacing, 'Continue');
             this.options.splice(1, 0, continueBtn); // Insert at index 1
 
             // Move credits down
@@ -166,9 +172,13 @@ export class TitleScene extends Phaser.Scene {
     private continueGame(): void {
         console.log('📂 Continuing Game');
         if (GameState.loadGame()) {
+            const savedMap = GameState.getCurrentMap();
             this.cameras.main.fadeOut(1000, 0, 0, 0);
             this.cameras.main.once('camerafadeoutcomplete', () => {
-                this.scene.start('WorldScene');
+                this.scene.start('WorldScene', {
+                    mapKey: savedMap,
+                    backgroundKey: savedMap + '_bg'
+                });
             });
         } else {
             // Error loading?
@@ -178,26 +188,25 @@ export class TitleScene extends Phaser.Scene {
     }
 
     private showCredits(): void {
+        const { width, height } = this.cameras.main;
+
         const credits = [
             'Created by Alberto',
             'For Nancy',
             '',
-            '-- Tools --',
-            'Phaser 3',
-            'TypeScript',
-            'Google DeepMind Agent'
+            '',
         ];
 
         // Simple overlay
         const container = this.add.container(0, 0);
-        const bg = this.add.rectangle(0, 0, GAME_WIDTH, GAME_HEIGHT, 0x000000, 0.9).setOrigin(0);
+        const bg = this.add.rectangle(0, 0, width, height, 0x000000, 0.9).setOrigin(0);
         container.add(bg);
 
-        let y = GAME_HEIGHT;
+        let y = height;
         const texts: Phaser.GameObjects.Text[] = [];
 
         credits.forEach((line, i) => {
-            const t = this.add.text(GAME_WIDTH / 2, y + (i * 40), line, {
+            const t = this.add.text(width / 2, y + (i * 40), line, {
                 fontFamily: 'monospace', fontSize: '24px', color: '#ffffff'
             }).setOrigin(0.5);
             container.add(t);
