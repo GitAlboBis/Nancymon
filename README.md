@@ -1,1 +1,1 @@
-Pokemon web app
+Pokemon web app typescript
